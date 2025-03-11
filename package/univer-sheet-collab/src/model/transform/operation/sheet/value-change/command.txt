@@ -1,0 +1,6 @@
+sheet.mutation.set-range-values
+sheet.mutation.move-range
+sheet.mutation.add-worksheet-merge
+sheet.mutation.reorder-range
+sheet.mutation.set-row-data
+sheet.mutation.set-col-data

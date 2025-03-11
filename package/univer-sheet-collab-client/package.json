@@ -1,0 +1,51 @@
+{
+  "name": "@gongback/univer-sheet-collab-client",
+  "version": "0.6.0",
+  "description": "",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./locale/*": "./src/locale/*.ts",
+    "./facade": "./src/facade/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "exports": {
+      ".": "./dist/index.js",
+      "./locale/*": "./dist/locale/*.ts",
+      "./facade": "./dist/facade/index.ts"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "@gongback/univer-sheet-collab": "0.6.0",
+    "@univerjs/core": "^0.6.0",
+    "@univerjs/engine-render": "^0.6.0",
+    "@univerjs/ui": "^0.6.0",
+    "@univerjs/docs": "^0.6.0",
+    "@univerjs/docs-ui": "^0.6.0",
+    "@univerjs/sheets": "^0.6.0",
+    "@univerjs/sheets-ui": "^0.6.0",
+    "@univerjs/design": "^0.6.0",
+    "react": "^16.9.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0",
+    "rxjs": ">=7.0.0"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "@gongback/univer-sheet-collab": "workspace:*",
+    "typescript": "~5.7.2",
+    "rxjs": "^7.8.1"
+  }
+}

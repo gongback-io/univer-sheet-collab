@@ -1,0 +1,4 @@
+sheet.mutation.add-range-protection
+sheet.mutation.set-range-protection
+sheet.mutation.add-worksheet-protection
+sheet.mutation.set-worksheet-protection

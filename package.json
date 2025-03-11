@@ -1,0 +1,29 @@
+{
+  "name": "gongback",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev:client": "pnpm --filter example-client run dev",
+    "dev:server": "pnpm --filter example-server run dev",
+    "build:packages": "pnpm --filter './package/*' run build",
+    "pack:packages": "pnpm --filter './package/*' exec -- pnpm pack",
+    "publish:packages": "pnpm --filter './package/*' publish --access public -r --no-git-checks"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": "^16.9.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0",
+    "rxjs": ">=7.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite-tsconfig-paths": "^5.1.4",
+    "tsconfig-paths": "^3.10.1"
+  }
+}

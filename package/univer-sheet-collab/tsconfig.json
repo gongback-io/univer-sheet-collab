@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "allowArbitraryExtensions": true,
+    "outDir": "dist",
+    "target": "ESNext",
+    "jsx": "react-jsx",
+    "lib": ["es2023"],
+    "useDefineForClassFields": true,
+
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "experimentalDecorators": true,
+    "module": "ESNext",
+
+    "moduleResolution": "bundler",
+
+    "resolveJsonModule": true,
+
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"]
+}

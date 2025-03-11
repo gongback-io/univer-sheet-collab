@@ -1,0 +1,7 @@
+sheet.mutation.move-rows
+sheet.mutation.move-columns
+sheet.mutation.insert-col
+sheet.mutation.insert-row
+sheet.mutation.remove-col
+sheet.mutation.remove-row
+sheet.mutation.set-worksheet-row-auto-height

@@ -1,0 +1,5 @@
+# my-monorepo/pnpm-workspace.yaml
+
+packages:
+  - "example/*"
+  - "package/*"
