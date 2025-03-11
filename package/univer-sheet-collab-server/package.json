@@ -1,7 +1,14 @@
 {
   "name": "@gongback/univer-sheet-collab-server",
   "version": "0.6.0",
-  "description": "",
+  "keywords": [
+    "gongback","univer", "spreadsheet", "collaboration"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nahooni0511/univer-sheet-collab"
+  },
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts"
@@ -19,9 +26,7 @@
       ".": "./dist/index.js"
     }
   },
-  "keywords": [],
   "author": "",
-  "license": "Apache-2.0",
   "peerDependencies": {
     "@gongback/univer-sheet-collab": "0.6.0",
     "@univerjs/core": "^0.6.0",
