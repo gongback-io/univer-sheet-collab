@@ -1,6 +1,6 @@
 {
     "name": "@gongback/univer-sheet-collab-client",
-    "version": "0.6.2",
+    "version": "0.6.3",
     "keywords": [
         "gongback",
         "univer",
@@ -34,9 +34,9 @@
                 "types": "./dist/locale/*.d.ts"
             },
             "./facade": {
-                "import": "./dist/facade.mjs",
-                "require": "./dist/facade.js",
-                "types": "./dist/facade.d.ts"
+                "import": "./dist/facade/index.mjs",
+                "require": "./dist/facade/index.js",
+                "types": "./dist/facade/index.d.ts"
             }
         }
     },

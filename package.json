@@ -1,7 +1,7 @@
 {
   "name": "gongback",
   "type": "module",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Collaborative spreadsheet plugin for Univer Spreadsheet",
   "keywords": [
     "gongback",
@@ -19,7 +19,7 @@
     "dev:server": "pnpm --filter example-server run dev",
     "clean:packages": "pnpm --filter './package/*' run clean",
     "build:packages": "pnpm run clean:packages && pnpm --filter './package/*' run build",
-    "pack:packages": "pnpm --filter './package/*' exec -- pnpm pack",
+    "pack:packages": "pnpm run build:packages && pnpm --filter './package/*' exec -- pnpm pack",
     "publish:packages": "pnpm run pack:packages && pnpm --filter './package/*' publish --access public -r --no-git-checks"
   },
   "author": "Gongback",
