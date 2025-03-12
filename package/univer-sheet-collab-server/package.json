@@ -1,8 +1,11 @@
 {
   "name": "@gongback/univer-sheet-collab-server",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "keywords": [
-    "gongback","univer", "spreadsheet", "collaboration"
+    "gongback",
+    "univer",
+    "spreadsheet",
+    "collaboration"
   ],
   "license": "Apache-2.0",
   "repository": {
@@ -13,20 +16,26 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      }
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc"
+    "clean": "rm -rf dist",
+    "build": "tsup"
   },
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
-    "exports": {
-      ".": "./dist/index.js"
-    }
-  },
-  "author": "",
+  "author": "Gongback",
   "peerDependencies": {
     "@gongback/univer-sheet-collab": "0.6.0",
     "@univerjs/core": "^0.6.0",
@@ -44,7 +53,8 @@
   },
   "devDependencies": {
     "@gongback/univer-sheet-collab": "workspace:*",
-    "typescript": "~5.7.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.2",
+    "typescript": "~5.7.3",
+    "tsup": "^8.4.0"
   }
 }

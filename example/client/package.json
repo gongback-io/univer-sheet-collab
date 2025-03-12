@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@gongback/univer-sheet-collab": "workspace:*",
+    "@gongback/univer-sheet-collab-client": "workspace:*",
     "@univerjs/core": "0.6.4",
     "@univerjs/design": "0.6.4",
     "@univerjs/docs": "0.6.4",
@@ -33,24 +35,22 @@
     "@univerjs/sheets-sort-ui": "0.6.4",
     "@univerjs/sheets-ui": "0.6.4",
     "@univerjs/ui": "0.6.4",
-    "@gongback/univer-sheet-collab": "workspace:*",
-    "@gongback/univer-sheet-collab-client": "workspace:*",
+    "axios": "^1.8.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.2.1",
-    "axios": "^1.8.1"
+    "react-router-dom": "^6.30.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
+    "@eslint/js": "^9.22.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.19.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.18",
-    "globals": "^15.14.0",
-    "typescript": "~5.7.2",
-    "typescript-eslint": "^8.22.0",
-    "vite": "^6.1.0"
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.2.1"
   }
 }

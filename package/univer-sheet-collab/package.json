@@ -1,46 +1,54 @@
 {
-  "name": "@gongback/univer-sheet-collab",
-  "version": "0.6.0",
-  "keywords": [
-    "gongback","univer", "spreadsheet", "collaboration"
-  ],
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nahooni0511/univer-sheet-collab"
-  },
-  "packageManager": "pnpm@10.4.1",
-  "author": "Gongback",
-  "homepage": "https://univer.ai",
-  "main": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "generate-commands": "python3 generate_operations.py",
-    "test": "jest"
-  },
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
+    "name": "@gongback/univer-sheet-collab",
+    "version": "0.6.2",
+    "keywords": [
+        "gongback",
+        "univer",
+        "spreadsheet",
+        "collaboration"
+    ],
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nahooni0511/univer-sheet-collab"
+    },
+    "packageManager": "pnpm@10.4.1",
+    "author": "Gongback",
+    "main": "src/index.ts",
     "exports": {
-      ".": "./dist/index.js"
+        ".": "./src/index.ts"
+    },
+    "publishConfig": {
+        "access": "public",
+        "main": "./dist/index.js",
+        "module": "./dist/index.mjs",
+        "exports": {
+            ".": {
+                "import": "./dist/index.mjs",
+                "require": "./dist/index.js",
+                "types": "./dist/index.d.ts"
+            }
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "clean": "rm -rf dist",
+        "build": "tsup",
+        "test": "jest"
+    },
+    "peerDependencies": {
+        "@univerjs/core": "^0.6.0",
+        "@univerjs/sheets": "^0.6.0",
+        "rxjs": ">=7.0.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.14",
+        "jest": "^29.7.0",
+        "rxjs": "^7.8.1",
+        "ts-jest": "^29.2.5",
+        "typescript": "~5.7.2",
+        "tsup": "^8.4.0"
     }
-  },
-  "peerDependencies": {
-    "@univerjs/core": "^0.6.0",
-    "@univerjs/sheets": "^0.6.0",
-    "rxjs": ">=7.0.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.14",
-    "jest": "^29.7.0",
-    "rxjs": "^7.8.1",
-    "ts-jest": "^29.2.5",
-    "typescript": "~5.7.2"
-  }
 }

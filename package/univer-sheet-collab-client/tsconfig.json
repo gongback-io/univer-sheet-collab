@@ -1,28 +1,8 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "allowArbitraryExtensions": true,
-    "outDir": "dist",
-    "target": "ESNext",
-    "jsx": "react-jsx",
-    "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
-    "useDefineForClassFields": true,
-
-    "declaration": true,
-    "emitDeclarationOnly": false,
-    "experimentalDecorators": true,
-    "module": "ESNext",
-
-    "moduleResolution": "bundler",
-
-    "resolveJsonModule": true,
-
-    "strict": true,
-    "strictPropertyInitialization": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "isolatedModules": true,
-    "skipLibCheck": true
+    "rootDir": "src",
+    "outDir": "dist/esm"
   },
-  "include": ["src"]
+  "include": ["src/**/*"]
 }

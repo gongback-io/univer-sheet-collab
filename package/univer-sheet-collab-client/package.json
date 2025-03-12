@@ -1,56 +1,73 @@
 {
-  "name": "@gongback/univer-sheet-collab-client",
-  "version": "0.6.0",
-  "keywords": [
-    "gongback","univer", "spreadsheet", "collaboration"
-  ],
-  "license": "Apache-2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nahooni0511/univer-sheet-collab"
-  },
-  "main": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./locale/*": "./src/locale/*.ts",
-    "./facade": "./src/facade/index.ts"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc"
-  },
-  "publishConfig": {
-    "access": "public",
-    "main": "./dist/index.js",
+    "name": "@gongback/univer-sheet-collab-client",
+    "version": "0.6.2",
+    "keywords": [
+        "gongback",
+        "univer",
+        "spreadsheet",
+        "collaboration"
+    ],
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nahooni0511/univer-sheet-collab"
+    },
+    "main": "src/index.ts",
     "exports": {
-      ".": "./dist/index.js",
-      "./locale/*": "./dist/locale/*.ts",
-      "./facade": "./dist/facade/index.ts"
+        ".": "./src/index.ts",
+        "./locale/*": "./src/locale/*.ts",
+        "./facade": "./src/facade/index.ts"
+    },
+    "publishConfig": {
+        "access": "public",
+        "main": "./dist/index.js",
+        "module": "./dist/index.mjs",
+        "exports": {
+            ".": {
+                "import": "./dist/index.mjs",
+                "require": "./dist/index.js",
+                "types": "./dist/index.d.ts"
+            },
+            "./locale/*": {
+                "import": "./dist/locale/*.mjs",
+                "require": "./dist/locale/*.js",
+                "types": "./dist/locale/*.d.ts"
+            },
+            "./facade": {
+                "import": "./dist/facade.mjs",
+                "require": "./dist/facade.js",
+                "types": "./dist/facade.d.ts"
+            }
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "clean": "rm -rf dist",
+        "build": "tsup"
+    },
+    "author": "Gongback",
+    "peerDependencies": {
+        "@univerjs/core": "^0.6.0",
+        "@univerjs/design": "^0.6.0",
+        "@univerjs/docs": "^0.6.0",
+        "@univerjs/docs-ui": "^0.6.0",
+        "@univerjs/engine-render": "^0.6.0",
+        "@univerjs/sheets": "^0.6.0",
+        "@univerjs/sheets-ui": "^0.6.0",
+        "@univerjs/ui": "^0.6.0",
+        "react": "^16.9.0 || ^17.0.0 || ^18.0.0",
+        "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0",
+        "rxjs": ">=7.0.0"
+    },
+    "dependencies": {
+        "socket.io-client": "^4.8.1"
+    },
+    "devDependencies": {
+        "@gongback/univer-sheet-collab": "workspace:*",
+        "tsup": "^8.4.0",
+        "rxjs": "^7.8.2",
+        "typescript": "~5.7.3"
     }
-  },
-  "author": "",
-  "peerDependencies": {
-    "@gongback/univer-sheet-collab": "0.6.0",
-    "@univerjs/core": "^0.6.0",
-    "@univerjs/engine-render": "^0.6.0",
-    "@univerjs/ui": "^0.6.0",
-    "@univerjs/docs": "^0.6.0",
-    "@univerjs/docs-ui": "^0.6.0",
-    "@univerjs/sheets": "^0.6.0",
-    "@univerjs/sheets-ui": "^0.6.0",
-    "@univerjs/design": "^0.6.0",
-    "react": "^16.9.0 || ^17.0.0 || ^18.0.0",
-    "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0",
-    "rxjs": ">=7.0.0"
-  },
-  "dependencies": {
-    "socket.io-client": "^4.7.5"
-  },
-  "devDependencies": {
-    "@gongback/univer-sheet-collab": "workspace:*",
-    "typescript": "~5.7.2",
-    "rxjs": "^7.8.1"
-  }
 }
