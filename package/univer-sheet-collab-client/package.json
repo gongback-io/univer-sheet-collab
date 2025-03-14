@@ -49,6 +49,7 @@
     },
     "author": "Gongback",
     "peerDependencies": {
+        "@gongback/univer-sheet-collab": "^0.6.0",
         "@univerjs/core": "^0.6.0",
         "@univerjs/design": "^0.6.0",
         "@univerjs/docs": "^0.6.0",
