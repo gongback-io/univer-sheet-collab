@@ -164,8 +164,11 @@ export class CollabSocket extends Disposable {
     }
 
     public leaveSheet(docId: string) {
+        if (!this.socket) {
+            return;
+        }
         console.log('leaveSheet')
-        this.socket!.off(`${this.opEventName}:${docId}`, this.onBroadcast);
+        this.socket?.off(`${this.opEventName}:${docId}`, this.onBroadcast);
 
         this.socket?.emit(this.leaveEventName, { docId });
 
