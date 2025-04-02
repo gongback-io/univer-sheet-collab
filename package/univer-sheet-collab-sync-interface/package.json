@@ -1,5 +1,5 @@
 {
-  "name": "@gongback/univer-sheet-collab-server",
+  "name": "@gongback/univer-sheet-collab-sync-interface",
   "version": "0.6.4",
   "keywords": [
     "gongback",
@@ -37,24 +37,10 @@
   },
   "author": "Gongback",
   "peerDependencies": {
-    "@gongback/univer-sheet-collab": "^0.6.0",
-    "@univerjs/core": "^0.6.0",
-    "@univerjs/docs": "^0.6.0",
-    "@univerjs/engine-formula": "^0.6.0",
-    "@univerjs/sheets": "^0.6.0",
-    "@univerjs/sheets-filter": "^0.6.0",
-    "@univerjs/sheets-formula": "^0.6.0",
-    "@univerjs/sheets-numfmt": "^0.6.0",
-    "@univerjs/sheets-sort": "^0.6.0",
-    "rxjs": ">=7.0.0"
+    "@gongback/univer-sheet-collab": "^0.6.0"
   },
   "dependencies": {
-    "async-mutex": "0.5.0"
   },
   "devDependencies": {
-    "@gongback/univer-sheet-collab": "workspace:*",
-    "rxjs": "^7.8.2",
-    "typescript": "~5.7.3",
-    "tsup": "^8.4.0"
   }
 }

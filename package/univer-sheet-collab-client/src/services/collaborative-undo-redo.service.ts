@@ -8,7 +8,7 @@ import {
 } from "@univerjs/core";
 import {
     ICommandTransformable,
-    ITransformableOperation,
+    IOperationModel,
     transformModelFactory,
 } from "@gongback/univer-sheet-collab";
 import {IOperationService} from "./operation.service";
@@ -32,7 +32,7 @@ export class CollaborativeUndoRedoService extends LocalUndoRedoService {
 
         this.disposeWithMe(
             _operationService.onOperationExecutedAll((docId, operation) => {
-                const operationModel = transformModelFactory.createTransformableOperation(operation);
+                const operationModel = transformModelFactory.createOperationModel(operation);
                 this.transformFrom(docId, operationModel);
             })
         )
@@ -47,7 +47,7 @@ export class CollaborativeUndoRedoService extends LocalUndoRedoService {
         return super.pushUndoRedo(collabItem)
     }
 
-    transformFrom(unitID: string, operation: ITransformableOperation<object>): void {
+    transformFrom(unitID: string, operation: IOperationModel<object>): void {
         const redoStack = this._getRedoStack(unitID, true) as ICollabUndoRedoItem[];
         const undoStack = this._getUndoStack(unitID, true) as ICollabUndoRedoItem[];
 

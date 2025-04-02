@@ -1,5 +1,4 @@
 import {ICommandInfo, IWorkbookData} from "@univerjs/core";
-import {ITransformableOperation} from "./model/transform/operation/ITransformableOperation";
 
 export type ParticipantId = string;
 export type DocId = string;

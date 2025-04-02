@@ -207,6 +207,7 @@ export class CollabSocket extends Disposable {
         request.operation.command.params = compressDuplicates(request.operation.command.params);
         console.log('sendOperation', request.operation, JSON.stringify(request.operation.command.params).length);
         this.socket.emit(`${this.opEmitName}:${docId}`, request, (response: OpResponse) => {
+            console.log('sendOperation callback', JSON.stringify(response, null, 2));
             if (response.data?.operation.command.params) {
                 response.data.operation.command.params = deepRestoreUndefined(response.data?.operation.command.params, "$UNDEFINED$");
             }
@@ -215,6 +216,7 @@ export class CollabSocket extends Disposable {
     }
 
     private onBroadcast(data: OpBroadcastResponse) {
+        console.log('onBroadcast', JSON.stringify(data, null,2));
         data.operation.command.params = deepRestoreUndefined(data.operation.command.params, "$UNDEFINED$");
         if (this.onOperationBroadcastListeners[data.docId]) {
             this.onOperationBroadcastListeners[data.docId](data);

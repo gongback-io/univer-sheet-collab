@@ -1,7 +1,4 @@
 import {IWorkbookData, LifecycleStages, Univer, UniverInstanceType, Workbook} from '@univerjs/core';
-import {UniverDocsPlugin} from '@univerjs/docs';
-import {UniverFormulaEnginePlugin} from '@univerjs/engine-formula';
-import {UniverSheetsPlugin} from '@univerjs/sheets';
 
 import '@univerjs/engine-formula/facade';
 import '@univerjs/sheets/facade';
@@ -9,11 +6,9 @@ import '@univerjs/sheets-numfmt/facade';
 import '@univerjs/sheets-filter/facade';
 import '@univerjs/sheets-sort/facade';
 
-import {DocId, IOperation, UniverSheetCollabPlugin} from "@gongback/univer-sheet-collab";
+import {DocId, IOperation} from "@gongback/univer-sheet-collab";
 import { FUniver } from '@univerjs/core/facade';
-import {IWorkbookDelegate} from "../types";
-import {UniverSheetCollabServerPlugin} from "../plugin/plugin";
-
+import {IWorkbookDelegate} from "./IWorkbookDelegate";
 
 export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     readonly docId: DocId;
@@ -33,6 +28,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     protected abstract makeUniver(): Univer;
 
     public async createSheet(workbookData: Partial<IWorkbookData>): Promise<void> {
+        console.log('[LocalWorkbookDelegate] createSheet', workbookData);
         const univer = this.makeUniver();
 
         this.univer = univer;
@@ -50,6 +46,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     }
 
     public async getSnapshot(): Promise<IWorkbookData> {
+        console.log('[LocalWorkbookDelegate] getSnapshot');
         if (!this.workbook) {
             throw new Error('Workbook is not initialized');
         }
@@ -57,17 +54,13 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     }
 
     public async dispose(): Promise<void> {
-        if (this.workbook) {
-            this.univerAPI?.disposeUnit(this.workbook.getUnitId())
-        }
-        this.univerAPI?.dispose();
+        console.log('[LocalWorkbookDelegate] dispose');
         this.univer?.dispose();
     }
 
     async executeOperation(operation: IOperation): Promise<IWorkbookData> {
-        if (!await this.univerAPI?.executeCommand(operation.command.id, operation.command.params, {fromCollab: true})) {
-            throw new Error('Cannot execute operation');
-        }
+        console.log('[LocalWorkbookDelegate] executeOperation', operation);
+        this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, {fromCollab: true});
         this.workbook!.setRev(operation.revision);
         return this.workbook!.save();
     }

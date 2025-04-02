@@ -1,5 +1,5 @@
 import {DocId, IOperation, OperationId, RevisionId} from "../../../types";
-import {ITransformableOperation} from "./ITransformableOperation";
+import {IOperationModel} from "./IOperationModel";
 import {CellPayload, RangePayload} from "../types";
 import {ITransformable, ITransformableOption} from "../basic/ITransformable";
 import {ITransformer, ITransformerOptions, TransformerOptions} from "../basic/ITransformer";
@@ -8,7 +8,7 @@ import {ICommandInfo} from "@univerjs/core";
 export type TransformableOperationOptions = ITransformableOption & ITransformerOptions & {
 
 }
-export class TransformableOperation<T extends Object = object> implements ITransformableOperation<T> {
+export class OperationModel<T extends Object = object> implements IOperationModel<T> {
     readonly id: string;
     readonly collabId: string;
     readonly command: ICommandInfo<T>;

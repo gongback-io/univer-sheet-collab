@@ -1,7 +1,6 @@
 import { promises as fs } from 'fs';
 import { IWorkbookData } from "@univerjs/core";
-import { IWorkbookStorage } from "@gongback/univer-sheet-collab-server";
-import { IRevisionWorkbook, RevisionId } from "@gongback/univer-sheet-collab";
+import {IRevisionWorkbook, IWorkbookStorage, RevisionId} from "@gongback/univer-sheet-collab";
 import path from 'path';
 
 const sheetsFilePath = path.join(__dirname, 'data', 'sheets.json');
@@ -19,8 +18,9 @@ type ISheetRow = {
  * This is not recommended for production.
  */
 async function readSheetsFile(): Promise<ISheetRow[]> {
+    let data;
     try {
-        const data = await fs.readFile(sheetsFilePath, 'utf8');
+        data = await fs.readFile(sheetsFilePath, 'utf8');
         return JSON.parse(data) as ISheetRow[];
     } catch (error: any) {
         if (error.code === 'ENOENT') {
@@ -38,6 +38,7 @@ async function writeSheetsFile(rows: ISheetRow[]): Promise<void> {
 
 class WorkbookStorage implements IWorkbookStorage {
     public async selectWorkbook(docId: string, revision: number): Promise<IRevisionWorkbook | undefined> {
+        console.log('[WorkbookStorage] selectWorkbook', docId, revision);
         const rows = await readSheetsFile();
         const found = rows.find(row => row.docId === docId && row.revision === revision);
         if (!found) {
@@ -52,6 +53,7 @@ class WorkbookStorage implements IWorkbookStorage {
     }
 
     public async selectLatestWorkbook(docId: string): Promise<IRevisionWorkbook | undefined> {
+        console.log('[WorkbookStorage] selectLatestWorkbook', docId);
         const rows = await readSheetsFile();
         const filtered = rows.filter(row => row.docId === docId);
         if (filtered.length === 0) {
@@ -67,6 +69,7 @@ class WorkbookStorage implements IWorkbookStorage {
     }
 
     async select(docId: string, revision?: RevisionId): Promise<IWorkbookData | undefined> {
+        console.log('[WorkbookStorage] select', docId, revision);
         if (revision) {
             const revisionSheet = await this.selectWorkbook(docId, revision);
             return revisionSheet?.workbookData;
@@ -76,6 +79,7 @@ class WorkbookStorage implements IWorkbookStorage {
     }
 
     public async insert(docId: string, revision: number, sheetData: IWorkbookData): Promise<void> {
+        console.log('[WorkbookStorage] insert', docId, revision);
         const rows = await readSheetsFile();
         rows.push({
             docId,
@@ -87,6 +91,7 @@ class WorkbookStorage implements IWorkbookStorage {
     }
 
     public async selectWorkbooks(docId: string): Promise<IRevisionWorkbook[]> {
+        console.log('[WorkbookStorage] selectWorkbooks', docId);
         const rows = await readSheetsFile();
         const filtered = rows.filter(row => row.docId === docId);
         return filtered.map(row => ({

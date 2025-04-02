@@ -1,4 +1,4 @@
-import {Univer} from "@univerjs/core";
+import {LocaleType, Univer, merge} from "@univerjs/core";
 import {UniverFormulaEnginePlugin} from "@univerjs/engine-formula";
 import {UniverDocsPlugin} from "@univerjs/docs";
 import {UniverSheetsPlugin} from "@univerjs/sheets";
@@ -6,12 +6,27 @@ import {UniverSheetsFormulaPlugin} from "@univerjs/sheets-formula";
 import {UniverSheetsFilterPlugin} from "@univerjs/sheets-filter";
 import {UniverSheetsSortPlugin} from "@univerjs/sheets-sort";
 import {UniverSheetsNumfmtPlugin} from "@univerjs/sheets-numfmt";
-import {UniverSheetCollabPlugin} from "@gongback/univer-sheet-collab";
-import {UniverSheetCollabServerPlugin, LocalWorkbookDelegate} from "@gongback/univer-sheet-collab-server";
+
+import SheetsEnUS from '@univerjs/sheets/locale/en-US';
+import SheetsFormulaEnUS from '@univerjs/sheets-formula/locale/en-US';
+import FindReplaceEnUS from '@univerjs/find-replace/locale/en-US';
+import SheetsFindReplaceEnUS from '@univerjs/sheets-find-replace/locale/en-US';
+import {LocalWorkbookDelegate} from "@gongback/univer-sheet-collab-sync-server";
+
 
 export class WorkbookModel extends LocalWorkbookDelegate {
     protected makeUniver(): Univer {
-        const univer = new Univer();
+        const univer = new Univer({
+            locale: LocaleType.EN_US,
+            locales: {
+                [LocaleType.EN_US]: merge(
+                    SheetsEnUS,
+                    SheetsFormulaEnUS,
+                    FindReplaceEnUS,
+                    SheetsFindReplaceEnUS,
+                ),
+            }
+        });
         this.registerBasicPlugin(univer);
         this.registerDocPlugin(univer);
         this.registerSheetPlugin(univer);
@@ -32,7 +47,7 @@ export class WorkbookModel extends LocalWorkbookDelegate {
         univer.registerPlugin(UniverSheetsFilterPlugin);
         univer.registerPlugin(UniverSheetsSortPlugin);
         univer.registerPlugin(UniverSheetsNumfmtPlugin);
-        univer.registerPlugin(UniverSheetCollabPlugin);
-        univer.registerPlugin(UniverSheetCollabServerPlugin);
+        // univer.registerPlugin(UniverSheetCollabPlugin);
+        // univer.registerPlugin(UniverSheetCollabServerPlugin);
     }
 }

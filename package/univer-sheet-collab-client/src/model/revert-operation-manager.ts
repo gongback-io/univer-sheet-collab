@@ -8,7 +8,7 @@ import {
 import {
     getOldCells,
     IOperation,
-    ITransformableOperation,
+    IOperationModel,
     OperationId,
     transformModelFactory
 } from "@gongback/univer-sheet-collab";
@@ -18,7 +18,7 @@ import {IOperationService} from "../services/operation.service";
 
 export interface IRevertOperationManager {
     revert(operationId: string): void;
-    commit(operation: ITransformableOperation): void;
+    commit(operation: IOperationModel): void;
 }
 
 export class RevertOperationManager extends Disposable implements IRevertOperationManager {
@@ -43,7 +43,7 @@ export class RevertOperationManager extends Disposable implements IRevertOperati
         this.disposeWithMe(
             this._operationService.onOperationExecuted(this.docId, (docId, operation, options) => {
                 try {
-                    const operationModel = transformModelFactory.createTransformableOperation(operation);
+                    const operationModel = transformModelFactory.createOperationModel(operation);
                     this.transformFrom(operationModel);
                 } catch(e) {
                     console.error(e);
@@ -70,7 +70,7 @@ export class RevertOperationManager extends Disposable implements IRevertOperati
             return;
         }
 
-        const operationModel = transformModelFactory.createTransformableOperation(operation);
+        const operationModel = transformModelFactory.createOperationModel(operation);
         if (operationModel.cellPayload) {
             const oldCells = getOldCells(workbook, operationModel.cellPayload);
             this.revertOperationMap[operation.operationId] = new RevertOperation(oldCells);
@@ -93,14 +93,14 @@ export class RevertOperationManager extends Disposable implements IRevertOperati
             delete this.revertOperationMap[operationId];
         }
     }
-    transformFrom(operation: ITransformableOperation<object>) {
+    transformFrom(operation: IOperationModel<object>) {
         Object.keys(this.revertOperationMap).forEach(operationId => {
             if (operation.operationId !== operationId) {
                 this.revertOperationMap[operationId] = operation.transform(this.revertOperationMap[operationId]);
             }
         });
     }
-    commit(operation: ITransformableOperation) {
+    commit(operation: IOperationModel) {
         if (operation.isTransformed) {
             this.revert(operation.operationId);
             operation.cellPayload?.forEach(({sheetId, cells}) => {

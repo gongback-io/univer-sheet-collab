@@ -8,5 +8,7 @@ export default defineConfig({
     format: ['cjs', 'esm'],
     minify: false,
     sourcemap: true,
-    external: ['@gongback/univer-sheet-collab']
+    external: [
+        '@gongback/univer-sheet-collab'
+    ]
 });

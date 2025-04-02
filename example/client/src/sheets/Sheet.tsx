@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {RevisionStorage} from "./data/RevisionStorage.ts";
+import {RevisionStorage} from "./data/RevisionStorage";
 import {FWorkbook} from "@univerjs/sheets/facade";
 
 import { LocaleType, merge, Univer } from "@univerjs/core";

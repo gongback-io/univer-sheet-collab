@@ -13,7 +13,7 @@ import {IConfirmService, IUIPartsService} from '@univerjs/ui';
 import {
     DocId,
     IOperation,
-    ITransformableOperation,
+    IOperationModel,
     OpBroadcastResponse,
     OpResponse,
     RevisionId,
@@ -36,7 +36,7 @@ export class SheetOperationHandler extends Disposable {
     private status: Status = 'SYNCED';
     private pendingRequests: IOperation[] = [];
     private waitingRequests: IOperation[] = [];
-    private waitingExecutes: SortingOperationQueue<ITransformableOperation> = new SortingOperationQueue();
+    private waitingExecutes: SortingOperationQueue<IOperationModel> = new SortingOperationQueue();
 
     private _rev$:BehaviorSubject<number>;
     rev$: Observable<number>;
@@ -57,6 +57,7 @@ export class SheetOperationHandler extends Disposable {
         this.collabId = collabSocket.collabId!;
         this.collabSocket = collabSocket;
         this.workbook = this._univerInstanceService.getUnit<Workbook>(this.docId, UniverInstanceType.UNIVER_SHEET)!;
+        console.log(this.workbook)
         this._rev$ = new BehaviorSubject<number>(this.workbook.getRev());
         this.rev$ = this._rev$.pipe(distinctUntilChanged());
 
@@ -129,7 +130,7 @@ export class SheetOperationHandler extends Disposable {
                 }
                 if (rev + 1 === operation.revision) {
                     if (this.status !== "SYNCED" && this.status !== "PENDING") {
-                        this.waitingExecutes.push(transformModelFactory.createTransformableOperation(operation, {isTransformed}));
+                        this.waitingExecutes.push(transformModelFactory.createOperationModel(operation, {isTransformed}));
                         return;
                     }
                     this.executeOpResultCommand(operation, isTransformed);
@@ -170,7 +171,7 @@ export class SheetOperationHandler extends Disposable {
             }
             if (rev + 1 === response.operation.revision) {
                 if (this.status !== "SYNCED" && this.status !== "PENDING") {
-                    this.waitingExecutes.push(transformModelFactory.createTransformableOperation(response.operation));
+                    this.waitingExecutes.push(transformModelFactory.createOperationModel(response.operation));
                     return;
                 }
                 this.execCollabCommand(response.operation);
@@ -206,7 +207,7 @@ export class SheetOperationHandler extends Disposable {
                 const rev = this.workbook.getRev();
                 console.log("syncing", rev);
 
-                let waitingExecute:ITransformableOperation | undefined = this.waitingExecutes.shift();
+                let waitingExecute:IOperationModel | undefined = this.waitingExecutes.shift();
                 while(waitingExecute) {
                     const rev = this.workbook.getRev();
                     if (rev >= waitingExecute.revision) {
@@ -291,7 +292,7 @@ export class SheetOperationHandler extends Disposable {
             const fetched = await this.fetch(this.workbook.getRev());
             this.waitingExecutes.clear();
             fetched.forEach(op => {
-                this.waitingExecutes.push(transformModelFactory.createTransformableOperation(op));
+                this.waitingExecutes.push(transformModelFactory.createOperationModel(op));
             });
         } catch(e: any) {
             if (e && e.message.startsWith('TooOldRevisionException')) {
@@ -340,6 +341,9 @@ export class SheetOperationHandler extends Disposable {
         this.setStatus("PENDING");
         this.pendingRequests.push(operation);
         this.collabSocket?.sendOperation(request, this.onOpResult(callback));
+        // this.collabSocket?.sendOperation(request, (response: OpResponse) => {
+        //     console.log("sendOperation callback", response);
+        // });
     }
 
     private async sendOperationAwait(operation: IOperation): Promise<void> {
@@ -349,22 +353,22 @@ export class SheetOperationHandler extends Disposable {
     }
 
     private executeOpResultCommand(transformed: IOperation, isTransformed: boolean) {
-        const operation = transformModelFactory.createTransformableOperation(transformed, {isTransformed});
+        const operation = transformModelFactory.createOperationModel(transformed, {isTransformed});
         this.executeOpResultOperation(operation);
     }
 
-    private executeOpResultOperation(transformed: ITransformableOperation) {
+    private executeOpResultOperation(transformed: IOperationModel) {
         this.revertOperationManager.commit(transformed);
         this.workbook.setRev(transformed.revision);
         this._rev$.next(transformed.revision);
     }
 
     private execCollabCommand(operation: IOperation) {
-        const operationModel = transformModelFactory.createTransformableOperation(operation);
+        const operationModel = transformModelFactory.createOperationModel(operation);
         this.execCollabOperation(operationModel);
     }
 
-    private execCollabOperation(operation: ITransformableOperation) {
+    private execCollabOperation(operation: IOperationModel) {
         console.log("execCollabCommand", operation);
         const command = operation.command;
         this._commandService.syncExecuteCommand(command.id, command.params, {fromCollab: true})

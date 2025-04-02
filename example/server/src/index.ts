@@ -1,15 +1,11 @@
-import {GongbackCollabServer} from "@gongback/univer-sheet-collab-server";
-
-import {LocaleType} from "@univerjs/core";
 import 'tsconfig-paths/register';
 
-import {WorkbookModel} from "./model/WorkbookModel";
 import express from 'express';
 import {createServer} from 'http';
 import {Server} from 'socket.io';
 import {workbookStorage} from "./repo/WorkbookStorage";
-import {opStorage} from "./repo/OpStorage";
-
+import {startSocketServer} from "./server/socketServer";
+import {startSyncServer} from "./server/syncServer";
 
 const app = express();
 const server = createServer(app);
@@ -35,15 +31,9 @@ const io = new Server(server, {
         origin: "*",
     },
 });
-const gongbackCollabServer = new GongbackCollabServer(io, {
-    workbookStorage,
-    opStorage,
-    initialSheetData: {
-        locale: LocaleType.EN_US
-    },
-    workbookFactory: (docId)=> new WorkbookModel(docId)
-});
-gongbackCollabServer.listen();
+
+startSocketServer(io);
+startSyncServer();
 
 io.on('connection', (socket) => {
     //..

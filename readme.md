@@ -17,6 +17,22 @@ For guaranteed performance, reliability, and spreadsheet integrity, consider sub
 
 ---
 
+## Architecture Overview
+
+This project follows a client - socket server - sync server architecture:  
+- **Client**:  
+The client is responsible for providing a collaborative interface for users, allowing real-time spreadsheet editing.
+- **Socket Server**:  
+The socket server receives users’ changes (operations) and forwards them to the sync server for synchronization. Communication between the socket server and the sync server is configurable; in the provided example, gRPC is used for this purpose.  
+- **Sync Server**:  
+The sync server processes the received changes by applying them to the sheet and updating the database. Once changes are committed, the sync server publishes the updated operations back to the socket server. In the example, Redis is used to handle this publish-subscribe mechanism.  
+- **Scalability**:  
+Both the socket server and the sync server are designed to scale out horizontally to handle increasing loads.  
+- **Sync Server Gateway (Scalability Consideration)**:  
+To effectively scale out the sync server, a dedicated sync server gateway is required. This gateway is not included in this project and must be implemented separately by each user. When developing the gateway, ensure that it partitions requests based on docId so that operations for the same document are routed to the same sync server instance. If multiple sync servers handle operations for a single docId, the operation order might become inconsistent.  
+
+---
+
 ## Getting Started
 
 ### Client
@@ -67,29 +83,64 @@ export interface IRevisionStorage {
 }
 ```
 
-### Server (Node.js)
+### Socket Server (Node.js)
 
 Install packages
 
 ```bash
 npm install @gongback/univer-sheet-collab
-npm install @gongback/univer-sheet-collab-server
+npm install @gongback/univer-sheet-collab-socket-server
 ```
 
 Start socket server
 
 ```typescript
-import { GongbackCollabServer } from '@gongback/univer-sheet-collab-server';
+import { CollabSocketServer } from "@gongback/univer-sheet-collab-socket-server";
+import { createClient as createRedisClient } from 'redis';
 import { Server } from 'socket.io'
 
 const io = new Server();
-const gongbackCollabServer = new GongbackCollabServer(io, {
+new CollabSocketServer(io, {
+    syncSubscriber: createRedisClient({
+        url: 'redis://localhost:6379'
+    }),
     workbookStorage,
     opStorage,
-    workbookFactory: (docId) => new WorkbookDelegate(docId)
+    sendToSyncServer: sendOverGrpc
+}).listen().then(() => {
+    console.log('Socket server listening');
 });
 
-gongbackCollabServer.listen();
+```
+
+### Sync Server (Node.js)
+
+Install packages
+
+```bash
+npm install @gongback/univer-sheet-collab
+npm install @gongback/univer-sheet-collab-sync-server
+```
+
+Start sync server
+
+```typescript
+import { SyncServer } from "@gongback/univer-sheet-collab-sync-server";
+import { createClient as createRedisClient } from 'redis';
+const syncServer = new SyncServer({
+    opStorage,
+    workbookStorage,
+    workbookDelegateFactory:(docId: DocId) => new WorkbookModel(docId),
+    syncPublisher: createRedisClient({
+        url: 'redis://localhost:6379'
+    }),
+});
+syncServer.start().then(() => {
+    startGrpcServer(syncServer)
+    console.log('Sync server started');
+})
+
+
 ```
 
 Implement the `IWorkbookDelegate` interface:

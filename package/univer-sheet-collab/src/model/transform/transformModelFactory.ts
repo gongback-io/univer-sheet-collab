@@ -1,4 +1,4 @@
-import {TransformableOperation, TransformableOperationOptions} from "./operation/TransformableOperation";
+import {OperationModel, TransformableOperationOptions} from "./operation/OperationModel";
 import {
     SheetMutationAddRangeProtectionTransformable,
     SheetMutationAddRangeProtectionTransformer
@@ -72,7 +72,7 @@ import {DefaultTransformableModel, DefaultTransformer} from "./operation/Default
 import {IOperation} from "../../types";
 import {ITransformableOption} from "./basic/ITransformable";
 import {ITransformerOptions} from "./basic/ITransformer";
-import {ITransformableOperation} from "./operation/ITransformableOperation";
+import {IOperationModel} from "./operation/IOperationModel";
 import {ICommandTransformer} from "./operation/ICommandTransformer";
 import {ICommandTransformable} from "./operation/ICommandTransformable";
 
@@ -149,11 +149,11 @@ export class TransformModelFactory {
         }
         return new DefaultTransformer(command, options);
     }
-    createTransformableOperation(o: IOperation<any>, options?: TransformableOperationOptions): ITransformableOperation {
+    createOperationModel(o: IOperation<any>, options?: TransformableOperationOptions): IOperationModel {
         const transformable = this.createTransformable(o.command);
         const transformer = this.createTransformer(o.command);
 
-        return new TransformableOperation(o, transformable, transformer, options);
+        return new OperationModel(o, transformable, transformer, options);
     }
 }
 

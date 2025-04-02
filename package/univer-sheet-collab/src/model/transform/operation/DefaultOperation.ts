@@ -1,4 +1,3 @@
-import {TransformableOperation} from "./TransformableOperation";
 import {CommandTransformable} from "./CommandTransformable";
 import {CommandTransformer} from "./CommandTransformer";
 

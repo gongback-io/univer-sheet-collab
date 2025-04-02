@@ -1,6 +1,5 @@
 import { promises as fs } from 'fs';
-import { IOpStorage } from "@gongback/univer-sheet-collab-server";
-import { DocId, IOperation, RevisionId } from "@gongback/univer-sheet-collab";
+import {DocId, IOperation, IOperationStorage, RevisionId} from "@gongback/univer-sheet-collab";
 import path from 'path';
 
 const operationsFilePath = path.join(__dirname, 'data', 'operations.json');
@@ -33,7 +32,7 @@ async function writeOperationsFile(rows: IOpRow[]): Promise<void> {
     await fs.writeFile(operationsFilePath, JSON.stringify(rows, null, 2), 'utf8');
 }
 
-class OpStorage implements IOpStorage {
+class OpStorage implements IOperationStorage {
     async insert(docId: DocId, operation: IOperation<any>): Promise<void> {
         const rows = await readOperationsFile();
         rows.push({
@@ -54,7 +53,7 @@ class OpStorage implements IOpStorage {
         const rows = await readOperationsFile();
         const filtered = rows.filter(row => row.docId === docId);
         if (filtered.length === 0) {
-            return 1;
+            return 0;
         }
         return Math.max(...filtered.map(row => row.revision));
     }
