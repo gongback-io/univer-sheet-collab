@@ -1,6 +1,6 @@
 {
   "name": "@gongback/univer-sheet-collab-socket-server",
-  "version": "0.6.4",
+  "version": "0.6.6",
   "keywords": [
     "gongback",
     "univer",
@@ -49,11 +49,10 @@
     "rxjs": ">=7.0.0"
   },
   "dependencies": {
-    "async-mutex": "0.5.0"
+    "@gongback/univer-sheet-collab-sync-interface": "^0.6.6"
   },
   "devDependencies": {
     "@gongback/univer-sheet-collab": "workspace:*",
-    "@gongback/univer-sheet-collab-sync-interface": "workspace:*",
     "rxjs": "^7.8.2",
     "typescript": "~5.7.3",
     "tsup": "^8.4.0"

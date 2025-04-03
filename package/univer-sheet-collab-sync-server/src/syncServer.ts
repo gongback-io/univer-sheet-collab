@@ -49,7 +49,7 @@ export class SyncServer {
         console.log('[LeaderServer] Publisher connected');
     }
 
-    async sendOperation(options: SyncRequest) {
+    async sendOperation(options: SyncRequest): Promise<SyncResult> {
         try {
             const docId = options.docId;
             return await this.docQueueManager.enqueue(docId, async () => {

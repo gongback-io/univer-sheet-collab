@@ -26,7 +26,6 @@
     "@univerjs/sheets-numfmt": "0.6.5",
     "@univerjs/sheets-sort": "0.6.5",
     "@univerjs/sheets-find-replace": "0.6.5",
-    "aws-sdk": "^2.1692.0",
     "express": "^4.21.2",
     "mysql2": "^3.13.0",
     "socket.io": "^4.8.1",

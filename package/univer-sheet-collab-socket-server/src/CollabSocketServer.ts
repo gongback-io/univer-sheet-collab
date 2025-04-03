@@ -83,7 +83,7 @@ export class CollabSocketServer {
                 if (!workbook?.rev) {
                     const newWorkbook = {
                         id: request.docId,
-                        rev: 0
+                        rev: 1
                     } as IWorkbookData
 
                     await this.workbookStorage.insert(

@@ -1,5 +1,3 @@
-import { Mutex } from 'async-mutex';
-
 import {
     DocId,
     IOperation,

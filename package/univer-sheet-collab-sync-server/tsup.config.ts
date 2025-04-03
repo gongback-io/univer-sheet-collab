@@ -10,6 +10,5 @@ export default defineConfig({
     sourcemap: true,
     external: [
         '@gongback/univer-sheet-collab',
-        '@gongback/univer-sheet-collab-sync-interface'
     ]
 });

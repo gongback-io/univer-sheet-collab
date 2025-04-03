@@ -57,7 +57,6 @@ export class SheetOperationHandler extends Disposable {
         this.collabId = collabSocket.collabId!;
         this.collabSocket = collabSocket;
         this.workbook = this._univerInstanceService.getUnit<Workbook>(this.docId, UniverInstanceType.UNIVER_SHEET)!;
-        console.log(this.workbook)
         this._rev$ = new BehaviorSubject<number>(this.workbook.getRev());
         this.rev$ = this._rev$.pipe(distinctUntilChanged());
 
@@ -102,7 +101,6 @@ export class SheetOperationHandler extends Disposable {
         return (response: OpResponse)=> {
             let nextStatus: Status | undefined;
             try {
-                console.log("onOpResult", response.operationId);
                 this.pendingRequests = this.pendingRequests.filter(operation => operation.operationId !== response.operationId);
                 if (this.pendingRequests.length === 0) {
                     nextStatus = 'SYNCED';
@@ -118,7 +116,6 @@ export class SheetOperationHandler extends Disposable {
                     return;
                 }
                 const {operation, isTransformed} = response!.data!
-                console.log("op", operation);
 
                 const rev = this.workbook.getRev();
                 if (rev >= operation.revision) {
@@ -155,9 +152,6 @@ export class SheetOperationHandler extends Disposable {
             return;
         }
         try {
-            console.log("onBroadcast", response.operation.operationId, response.operation);
-            console.log('status', this.status);
-
             const rev = this.workbook.getRev();
             if (rev >= response.operation.revision) {
                 //already accepted
@@ -341,9 +335,6 @@ export class SheetOperationHandler extends Disposable {
         this.setStatus("PENDING");
         this.pendingRequests.push(operation);
         this.collabSocket?.sendOperation(request, this.onOpResult(callback));
-        // this.collabSocket?.sendOperation(request, (response: OpResponse) => {
-        //     console.log("sendOperation callback", response);
-        // });
     }
 
     private async sendOperationAwait(operation: IOperation): Promise<void> {
@@ -369,7 +360,6 @@ export class SheetOperationHandler extends Disposable {
     }
 
     private execCollabOperation(operation: IOperationModel) {
-        console.log("execCollabCommand", operation);
         const command = operation.command;
         this._commandService.syncExecuteCommand(command.id, command.params, {fromCollab: true})
         this.workbook.setRev(operation.revision);
