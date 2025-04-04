@@ -1,6 +1,6 @@
 import {ICommandInfo, IWorkbookData} from "@univerjs/core";
 
-export type ParticipantId = string;
+export type CollabId = string;
 export type DocId = string;
 export type RevisionId = number;
 export type OperationId = string;

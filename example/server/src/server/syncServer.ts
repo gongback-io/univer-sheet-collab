@@ -8,7 +8,7 @@ import {createClient as createRedisClient} from 'redis';
 
 export function startSyncServer() {
     const syncServer = new SyncServer({
-        opStorage,
+        operationStorage: opStorage,
         workbookStorage,
         workbookDelegateFactory:(docId: DocId) => new WorkbookModel(docId),
         syncPublisher: createRedisClient({

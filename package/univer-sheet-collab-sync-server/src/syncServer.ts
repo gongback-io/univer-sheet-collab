@@ -1,5 +1,6 @@
 import {DocQueueManager} from './model/doc-queue-manager/DocQueueManager';
 import {
+    DocId,
     IOperationStorage,
     IWorkbookStorage,
 } from '@gongback/univer-sheet-collab';
@@ -13,6 +14,7 @@ import {IWorkbookData} from '@univerjs/core';
 import {ISheetSyncer} from "@gongback/univer-sheet-collab-sync-interface";
 
 export class SyncServer implements ISheetSyncer {
+    private operationStorage: IOperationStorage
     private workbookStorage: IWorkbookStorage
     private workbookDelegateFactory: WorkbookDelegateFactory
     private otHandler: OTHandler;
@@ -21,17 +23,18 @@ export class SyncServer implements ISheetSyncer {
     private syncPublisher: Publisher;
 
     constructor(options: {
-        opStorage: IOperationStorage,
+        operationStorage: IOperationStorage,
         workbookDelegateFactory: WorkbookDelegateFactory,
         workbookStorage: IWorkbookStorage,
         syncPublisher: Publisher,
     }) {
         const {
-            opStorage,
+            operationStorage,
             workbookDelegateFactory,
             workbookStorage,
             syncPublisher,
         } = options;
+        this.operationStorage = operationStorage;
         this.workbookStorage = workbookStorage;
         this.workbookDelegateFactory = workbookDelegateFactory;
 
@@ -40,14 +43,14 @@ export class SyncServer implements ISheetSyncer {
             console.error('[LeaderServer] Publisher Error:', err);
         });
 
-        const operationQueue = new InMemoryOperationQueue(opStorage);
+        const operationQueue = new InMemoryOperationQueue(operationStorage, this.onFreeCache.bind(this));
         this.otHandler = new OTHandler({
             operationQueue: operationQueue,
         });
         this.postProcessor = new PostProcessor(
             workbookDelegateFactory,
             workbookStorage,
-            opStorage
+            operationStorage
         );
     }
 
@@ -108,5 +111,21 @@ export class SyncServer implements ISheetSyncer {
             console.error('[LeaderServer] sendOperation Error:', error);
             throw error;
         }
+    }
+
+    private async onFreeCache(docId: DocId) {
+        const workbook = await this.workbookStorage.select(docId);
+        if (!workbook || !workbook.rev) {
+            return;
+        }
+        const operations = await this.operationStorage.selectAfter(docId, workbook.rev)
+        if (operations.length > 0) {
+            const workbookDelegate = this.workbookDelegateFactory(docId)
+            await workbookDelegate.createSheet(workbook)
+            const workbookData = await workbookDelegate.executeOperations(operations)
+            await workbookDelegate.dispose();
+            await this.workbookStorage.insert(docId, workbookData.rev!, workbookData)
+        }
+
     }
 }

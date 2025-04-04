@@ -1,10 +1,13 @@
 import {
+    CollabId,
     decompress,
     deepRestoreUndefined,
     DocId,
     FetchRequest,
     FetchResponse,
-    IOperation, IOperationStorage, IWorkbookStorage,
+    IOperation,
+    IOperationStorage,
+    IWorkbookStorage,
     JoinRequest,
     JoinResponse,
     LeaveRequest,
@@ -13,9 +16,12 @@ import {
     OpResponse,
 } from "@gongback/univer-sheet-collab";
 import {IServer, ISocket, Subscriber} from "./types";
-
-import { IWorkbookData } from "@univerjs/core";
-import {ISheetSyncer, ExecRequest, ExecResult} from "@gongback/univer-sheet-collab-sync-interface";
+import {
+    ISheetSyncer,
+    ExecRequest,
+    ExecResult,
+} from "@gongback/univer-sheet-collab-sync-interface";
+import {IWorkbookData} from "@univerjs/core";
 
 export type CollabSocketServerOptions = {
     opEmitEventName?: string;
@@ -24,10 +30,10 @@ export type CollabSocketServerOptions = {
     joinEventName?: string;
     leaveEventName?: string;
 
-    syncSubscriber: Subscriber
-    sheetSyncer: ISheetSyncer,
-    workbookStorage: IWorkbookStorage,
-    opStorage: IOperationStorage
+    syncSubscriber: Subscriber;
+    sheetSyncer: ISheetSyncer;
+    workbookStorage: IWorkbookStorage;
+    opStorage: IOperationStorage;
 };
 
 export class CollabSocketServer {
@@ -42,9 +48,11 @@ export class CollabSocketServer {
     private readonly workbookStorage: IWorkbookStorage;
     private readonly opStorage: IOperationStorage;
 
-    private sheetSyncer: ISheetSyncer;
-    private syncSubscriber :Subscriber;
+    private readonly sheetSyncer: ISheetSyncer;
+    private readonly syncSubscriber: Subscriber;
+
     private docSubscriptions: Map<DocId, number> = new Map();
+    private userJoinedDocs: Map<CollabId, DocId[]> = new Map();
 
     constructor(server: IServer, options: CollabSocketServerOptions) {
         this.server = server;
@@ -52,186 +60,216 @@ export class CollabSocketServer {
         this.syncSubscriber = options.syncSubscriber;
         this.workbookStorage = options.workbookStorage;
         this.opStorage = options.opStorage;
-
-        this.opEmitEventName = options?.opEmitEventName || 'sheet-collab-operation';
-        this.opEventName = options?.opEventName || 'sheet-collab-operation';
-        this.fetchEventName = options?.fetchEventName || 'sheet-collab-fetch';
-        this.joinEventName = options?.joinEventName || 'sheet-collab-join';
-        this.leaveEventName = options?.leaveEventName || 'sheet-collab-leave';
-
         this.sheetSyncer = options.sheetSyncer;
 
+        this.opEmitEventName = options.opEmitEventName || "sheet-collab-operation";
+        this.opEventName = options.opEventName || "sheet-collab-operation";
+        this.fetchEventName = options.fetchEventName || "sheet-collab-fetch";
+        this.joinEventName = options.joinEventName || "sheet-collab-join";
+        this.leaveEventName = options.leaveEventName || "sheet-collab-leave";
+
         this.onConnect = this.onConnect.bind(this);
-        this.onJoin = this.onJoin.bind(this);
+        this.handleJoin = this.handleJoin.bind(this);
         this.onReceiveOperation = this.onReceiveOperation.bind(this);
         this.onFetch = this.onFetch.bind(this);
         this.handleLeave = this.handleLeave.bind(this);
     }
 
     public async listen() {
-        await this.syncSubscriber.connect()
-        this.server.on('connection', this.onConnect.bind(this));
+        await this.syncSubscriber.connect();
+        this.server.on("connection", this.onConnect);
     }
 
     private onConnect(socket: ISocket) {
-        socket.on(this.joinEventName, async (request: JoinRequest, callback: (response: JoinResponse) => void) => {
-            try {
-                socket.join(`sheet-${request.docId}`);
-                this.onJoin(socket, request.docId);
-
-                const workbook = await this.workbookStorage.select(request.docId);
-                if (!workbook?.rev) {
-
-                    const newWorkbook = await this.sheetSyncer.createDoc(request.docId, {
-                        id: request.docId,
-                        rev: 1
-                    })
-
-                    callback({
-                        success: true,
-                        data: {
-                            docId: request.docId,
-                            operations: [],
-                            workbookData: newWorkbook,
-                        }
-                    });
-                    return;
+        socket.on(this.joinEventName,
+            async (request: JoinRequest, callback: (response: JoinResponse) => void) => {
+                try {
+                    socket.join(`sheet-${request.docId}`);
+                    const data = await this.handleJoin(socket.id, request.docId);
+                    callback({success: true, data});
+                } catch (e) {
+                    console.error(e);
+                    callback({success: false, message: "Failed to load sheet"});
                 }
-                const operations = await this.opStorage.selectAfter(request.docId, workbook.rev);
-                callback({
-                    success: true,
-                    data: {
-                        docId: request.docId,
-                        operations,
-                        workbookData: workbook,
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-                callback({ success: false, message: 'Failed to load sheet' });
             }
-        });
+        );
+
         socket.on(this.leaveEventName, (request: LeaveRequest) => {
             socket.leave(`sheet-${request.docId}`);
-            this.handleLeave(request.docId);
+            this.handleLeave(socket.id, request.docId);
         });
 
-        socket.on('disconnect', (e: any) => {
+        socket.on(this.opEventName, async (request: OpRequest, callback: (response: OpResponse) => void) => {
+                const result = await this.onReceiveOperation(request, socket);
+                callback(result);
+            }
+        );
+
+        socket.on(this.fetchEventName, (request: FetchRequest, callback: (response: FetchResponse) => void) => {
+                this.onFetch(request, callback);
+            }
+        );
+
+        socket.on("disconnect", () => {
+            const joinedDocs = this.userJoinedDocs.get(socket.id) || [];
+            for (const docId of joinedDocs) {
+                socket.leave(`sheet-${docId}`);
+                this.handleLeave(socket.id, docId);
+            }
         });
     }
 
-    private onJoin(socket: ISocket, docId: DocId) {
-        const wrappedOpCallback = async (request: OpRequest, callback: (response: OpResponse) => void) => {
-            const result = await this.onReceiveOperation(request, socket);
-            callback(result);
-        };
-
-        const wrappedFetchCallback = (request: FetchRequest, callback: (response: FetchResponse) => void) => {
-            this.onFetch(request, callback);
-        };
-
-        const wrappedLeaveCallback = (request: LeaveRequest) => {
-            socket.off(`${this.opEventName}:${request.docId}`, wrappedOpCallback);
-            socket.off(`${this.fetchEventName}:${request.docId}`, wrappedFetchCallback);
-            socket.off(this.leaveEventName, wrappedLeaveCallback);
-            this.handleLeave(request.docId);
-        };
-
-        socket.off(`${this.opEventName}:${docId}`, wrappedOpCallback);
-        socket.on(`${this.opEventName}:${docId}`, wrappedOpCallback);
-        socket.off(`${this.fetchEventName}:${docId}`, wrappedFetchCallback);
-        socket.on(`${this.fetchEventName}:${docId}`, wrappedFetchCallback);
-        socket.on(this.leaveEventName, wrappedLeaveCallback);
+    private async handleJoin(collabId: CollabId, docId: DocId) {
+        const joinedDocs = this.userJoinedDocs.get(collabId) || [];
+        if (!joinedDocs.includes(docId)) {
+            this.userJoinedDocs.set(collabId, [...joinedDocs, docId]);
+        }
 
         this.addDocSubscription(docId);
+        return await this.getDocData(docId);
     }
 
-    private async onReceiveOperation(request: OpRequest, socket: ISocket): Promise<OpResponse> {
-        const receivedOperation = { ...request.operation };
-        const operationId = receivedOperation.operationId;
-        try {
-            const collabId = (socket as any).collabId;
-            receivedOperation.command.params = decompress(request.operation.command.params);
-            receivedOperation.command.params = deepRestoreUndefined(receivedOperation.command.params, "$UNDEFINED$");
-
-            const ExecRequest:ExecRequest = {
-                docId: request.docId,
-                collabId: collabId,
-                operation: receivedOperation
-            };
-
-            const result:ExecResult = await this.sheetSyncer.execOperation(ExecRequest);
-            const response: OpResponse = {
-                success: true,
-                operationId,
-                data: {
-                    docId: result.docId,
-                    operation: result.operation,
-                    isTransformed: result.isTransformed
-                }
-            }
-
-            return response;
-        } catch (e: any) {
-            console.error(e);
-            const message = `${e.name || 'Internal Server Error'}: ${e.message || 'Unknown Error'}`;
-            const response: OpResponse = {
-                success: false,
-                operationId,
-                message,
-            }
-            return response;
-        }
-    }
-
-    private addDocSubscription(docId: DocId) {
-        // 구독자 수 증가
-        const count = this.docSubscriptions.get(docId) || 0;
-        this.docSubscriptions.set(docId, count + 1);
-
-        if (count === 0) {
-            const channel = `doc:${docId}:op`;
-            this.syncSubscriber.subscribe(channel, (message) => {
-                try {
-                    const opResult = JSON.parse(message) as IOperation;
-                    const response: OpBroadcastResponse = {
-                        docId: docId,
-                        operation: opResult
-                    }
-                    // 해당 docId 룸에 연결된 모든 클라이언트에게 emit
-                    this.server.to(`sheet-${docId}`).emit(`${this.opEmitEventName}:${docId}`, response);
-                } catch (err) {
-                    console.error('Error processing Subscriber message:', err);
-                }
-            }).catch(console.error);
-            console.log(`[GongbackCollabServer] Subscribed to Subscriber channel ${channel}`);
-        }
-    }
-
-    private async handleLeave(docId: DocId) {
+    private async handleLeave(collabId:CollabId, docId: DocId) {
         const count = this.docSubscriptions.get(docId) || 0;
         if (count <= 1) {
             this.docSubscriptions.delete(docId);
             const channel = `doc:${docId}:op`;
             try {
                 await this.syncSubscriber.unsubscribe(channel);
-                console.log(`[GongbackCollabServer] Unsubscribed from Subscriber channel ${channel}`);
+                console.log(`[CollabSocketServer] Unsubscribed from channel: ${channel}`);
             } catch (err) {
                 console.error(`Error unsubscribing from channel ${channel}:`, err);
             }
         } else {
             this.docSubscriptions.set(docId, count - 1);
         }
+
+        const joinedDocs = this.userJoinedDocs.get(collabId) || [];
+        const updatedJoinedDocs = joinedDocs.filter((doc) => doc !== docId);
+        if (updatedJoinedDocs.length === 0) {
+            this.userJoinedDocs.delete(collabId);
+        } else {
+            this.userJoinedDocs.set(collabId, updatedJoinedDocs);
+        }
     }
 
-    private async onFetch(request: FetchRequest, callback: (response: FetchResponse) => void) {
-        const operations = await this.opStorage.selectAfter(request.docId, request.revision)
-        callback({
-            success: true,
-            data: {
+    /**
+     * 받은 operation을 처리
+     * @param request
+     * @param socket
+     */
+    private async onReceiveOperation(request: OpRequest, socket: ISocket): Promise<OpResponse> {
+        const receivedOperation = {...request.operation};
+        const operationId = receivedOperation.operationId;
+
+        try {
+            receivedOperation.command.params = decompress(request.operation.command.params);
+            receivedOperation.command.params = deepRestoreUndefined(
+                receivedOperation.command.params,
+                "$UNDEFINED$"
+            );
+
+            // 실제 문서 수정 로직 (SyncServer)
+            const execRequest: ExecRequest = {
                 docId: request.docId,
-                operations,
-            }
-        })
+                collabId: socket.id, // 소켓 id를 collabId로 삼을 수도 있음
+                operation: receivedOperation,
+            };
+
+            const result: ExecResult = await this.sheetSyncer.execOperation(execRequest);
+
+            return {
+                success: true,
+                operationId,
+                data: {
+                    docId: result.docId,
+                    operation: result.operation,
+                    isTransformed: result.isTransformed,
+                },
+            };
+        } catch (e: any) {
+            console.error(e);
+            const message = `${e.name || "Internal Server Error"}: ${e.message || "Unknown Error"}`;
+            return {
+                success: false,
+                operationId,
+                message,
+            };
+        }
+    }
+
+    /**
+     * 문서별 구독자 수를 관리하는 메서드
+     * 구독자 수가 0이 되는 시점에 Redis(또는 Pub/Sub) 채널을 unsubscribe
+     */
+    private addDocSubscription(docId: DocId) {
+        const count = this.docSubscriptions.get(docId) || 0;
+        this.docSubscriptions.set(docId, count + 1);
+
+        // 처음 구독이면 Redis subscriber 등록
+        if (count === 0) {
+            const channel = `doc:${docId}:op`;
+            this.syncSubscriber
+                .subscribe(channel, (message) => {
+                    try {
+                        const opResult = JSON.parse(message) as IOperation;
+                        const response: OpBroadcastResponse = {
+                            docId: docId,
+                            operation: opResult,
+                        };
+                        // 해당 docId room의 모든 클라이언트에게 emit
+                        this.server.to(`sheet-${docId}`).emit(this.opEmitEventName, response);
+                    } catch (err) {
+                        console.error("Error processing Subscriber message:", err);
+                    }
+                })
+                .catch(console.error);
+
+            console.log(`[CollabSocketServer] Subscribed to channel: ${channel}`);
+        }
+    }
+
+    /**
+     * 특정 revision 이후의 operation들을 가져와 응답
+     */
+    private async onFetch(request: FetchRequest, callback: (response: FetchResponse) => void) {
+        try {
+            const operations = await this.opStorage.selectAfter(request.docId, request.revision);
+            callback({
+                success: true,
+                data: {
+                    docId: request.docId,
+                    operations,
+                },
+            });
+        } catch (e) {
+            console.error(e);
+            callback({
+                success: false,
+                message: "Failed to fetch operations",
+            });
+        }
+    }
+
+    private async getDocData(docId: DocId) {
+        let operations: IOperation[] = [];
+        let workbookData: IWorkbookData;
+        const workbook = await this.workbookStorage.select(docId);
+        if (!workbook?.rev) {
+            const newWorkbook = await this.sheetSyncer.createDoc(docId, {
+                id: docId,
+                rev: 1,
+            });
+            operations = [];
+            workbookData = newWorkbook;
+        } else {
+            operations = await this.opStorage.selectAfter(docId, workbook.rev);
+            workbookData = workbook
+        }
+        return {
+            docId,
+            operations,
+            workbookData
+        };
     }
 }

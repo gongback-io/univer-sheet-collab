@@ -5,29 +5,31 @@ import {
     JoinRequest,
     JoinResponse,
     JoinResponseData,
+    FetchRequest,
+    FetchResponse,
     OpRequest,
     OpResponse,
     OpBroadcastResponse,
-    FetchResponse,
-    FetchRequest,
     deepReplaceUndefined,
     deepRestoreUndefined,
-    IOperation,
-    compressDuplicates
+    compressDuplicates,
+    IOperation
 } from '@gongback/univer-sheet-collab';
 import {
     CollabSocketOptions,
     defaultOpEmitName,
     defaultOpEventName,
     defaultJoinEventName,
-    defaultLeaveEventName, defaultFetchEventName,
-} from "../../types";
-import SortingOperationQueue from "../queue/SortingOperationQueue";
-import {Disposable, IConfigService} from "@univerjs/core";
+    defaultLeaveEventName,
+    defaultFetchEventName,
+} from '../../types';
+import SortingOperationQueue from '../queue/SortingOperationQueue';
+import { Disposable, IConfigService } from '@univerjs/core';
 import {
     ISocketConfig,
     SOCKET_CONFIG_KEY
-} from "../../controller/config.schema";
+} from '../../controller/config.schema';
+
 
 export type OperationBroadCastListener = (response: OpBroadcastResponse) => void;
 
@@ -41,8 +43,8 @@ export class CollabSocket extends Disposable {
     private pendingOperation: { [docId: string]: SortingOperationQueue<IOperation> } = {};
     private onOperationBroadcastListeners: { [docId: string]: OperationBroadCastListener } = {};
 
-    private offlineListeners: { [docId: string]: (reason: string) => void} = {};
-    private reconnectListeners: { [docId: string]: () => void} = {};
+    private offlineListeners: { [docId: string]: (reason: string) => void } = {};
+    private reconnectListeners: { [docId: string]: () => void } = {};
 
     private opEmitName: string;
     private opEventName: string;
@@ -50,14 +52,13 @@ export class CollabSocket extends Disposable {
     private leaveEventName: string;
     private fetchEventName: string;
 
-    constructor(
-        @IConfigService private readonly _configService: IConfigService
-    ) {
+    constructor(@IConfigService private readonly _configService: IConfigService) {
         super();
         const config = _configService.getConfig<ISocketConfig>(SOCKET_CONFIG_KEY)!;
 
         this.serverUrl = config.serverUrl;
         this.opts = config.opts;
+
         this.opEmitName = config?.opEmitName || defaultOpEmitName;
         this.opEventName = config?.opEventName || defaultOpEventName;
         this.joinEventName = config?.joinEventName || defaultJoinEventName;
@@ -85,33 +86,21 @@ export class CollabSocket extends Disposable {
         this.socket?.off(event, listener);
     }
     public connect() {
-        this.socket?.connect();
+        this.socket?.connect()
     }
     public disconnect() {
-        this.socket?.disconnect();
-    }
-
-    public setOnOfflineListener(docId: DocId, listener: (reason: string) => void) {
-        this.offlineListeners[docId] = listener;
-    }
-
-    public removeOnOfflineListener(docId: DocId) {
-        delete this.offlineListeners[docId];
-    }
-
-    public setOnReconnectListener(docId: DocId, listener: () => void) {
-        this.reconnectListeners[docId] = listener;
-    }
-    public removeOnReconnectListener(docId: DocId) {
-        delete this.reconnectListeners[docId];
+        this.socket?.disconnect()
     }
 
     public setOnBroadcastListener(docId: DocId, broadcastListener: OperationBroadCastListener) {
-        this.pendingOperation[docId]?.forEach(operation => {
-            broadcastListener({ docId, operation });
-        });
-        delete this.pendingOperation[docId];
         this.onOperationBroadcastListeners[docId] = broadcastListener;
+
+        if (this.pendingOperation[docId]) {
+            this.pendingOperation[docId].forEach((operation) => {
+                broadcastListener({ docId, operation });
+            });
+            delete this.pendingOperation[docId];
+        }
     }
 
     public removeOnBroadcastListener(docId: DocId) {
@@ -124,12 +113,11 @@ export class CollabSocket extends Disposable {
             await this.connectSocket();
         }
 
-        return new Promise((resolve, reject) => {
-            if (!this.onOperationBroadcastListeners[docId]) {
-                this.pendingOperation[docId] = new SortingOperationQueue();
-            }
-            this.socket!.on(`${this.opEventName}:${docId}`, this.onBroadcast);
+        if (!this.onOperationBroadcastListeners[docId]) {
+            this.pendingOperation[docId] = new SortingOperationQueue();
+        }
 
+        return new Promise((resolve, reject) => {
             this.socket!.emit(this.joinEventName, request, (response: JoinResponse) => {
                 if (!response.success) {
                     const err = new Error(response.message || 'Join failed');
@@ -140,19 +128,21 @@ export class CollabSocket extends Disposable {
 
                 if (response.data) {
                     const joinResponseData: JoinResponseData = response.data;
-                    console.log('Joined doc:', docId, 'Revision:', response.data.workbookData.rev);
+                    console.log(
+                        'Joined doc:',
+                        docId,
+                        'Revision:',
+                        response.data.workbookData.rev
+                    );
 
                     if (this.onOperationBroadcastListeners[docId]) {
-                        joinResponseData.operations.map(op => {
+                        joinResponseData.operations.forEach((op) => {
                             this.onOperationBroadcastListeners[docId]({ docId, operation: op });
                         });
-
-                    } else {
-                        if (this.pendingOperation[docId]) {
-                            response.data.operations.map(op => {
-                                this.pendingOperation[docId].push(op);
-                            })
-                        }
+                    } else if (this.pendingOperation[docId]) {
+                        joinResponseData.operations.forEach((op) => {
+                            this.pendingOperation[docId].push(op);
+                        });
                     }
 
                     resolve(joinResponseData);
@@ -167,10 +157,10 @@ export class CollabSocket extends Disposable {
         if (!this.socket) {
             return;
         }
-        console.log('leaveSheet')
-        this.socket?.off(`${this.opEventName}:${docId}`, this.onBroadcast);
+        console.log('leaveSheet docId:', docId);
 
-        this.socket?.emit(this.leaveEventName, { docId });
+        // 서버에 leave 요청
+        this.socket.emit(this.leaveEventName, { docId });
 
         delete this.pendingOperation[docId];
         this.removeOnOfflineListener(docId);
@@ -185,13 +175,13 @@ export class CollabSocket extends Disposable {
                     return;
                 }
                 const request: FetchRequest = { docId, revision };
-                this.socket.emit(`${this.fetchEventName}:${docId}`, request, (response: FetchResponse) => {
+                this.socket.emit(this.fetchEventName, request, (response: FetchResponse) => {
                     response.data?.operations.forEach(op => {
                         op.command.params = deepRestoreUndefined(op.command.params, "$UNDEFINED$");
-                    })
+                    });
                     resolve(response);
                 });
-            } catch(e) {
+            } catch (e) {
                 reject(e);
             }
         });
@@ -201,24 +191,40 @@ export class CollabSocket extends Disposable {
         if (!this.socket) {
             throw new Error('Socket not connected');
         }
-        const docId = request.docId;
+        request.operation.command.params = deepReplaceUndefined(
+            request.operation.command.params,
+            '$UNDEFINED$'
+        );
+        request.operation.command.params = compressDuplicates(
+            request.operation.command.params
+        );
 
-        request.operation.command.params = deepReplaceUndefined(request.operation.command.params, "$UNDEFINED$");
-        request.operation.command.params = compressDuplicates(request.operation.command.params);
-        this.socket.emit(`${this.opEmitName}:${docId}`, request, (response: OpResponse) => {
+        this.socket.emit(this.opEmitName, request, (response: OpResponse) => {
             if (response.data?.operation.command.params) {
-                response.data.operation.command.params = deepRestoreUndefined(response.data?.operation.command.params, "$UNDEFINED$");
+                response.data.operation.command.params = deepRestoreUndefined(
+                    response.data?.operation.command.params,
+                    '$UNDEFINED$'
+                );
             }
             callback(response);
         });
     }
 
     private onBroadcast(data: OpBroadcastResponse) {
-        data.operation.command.params = deepRestoreUndefined(data.operation.command.params, "$UNDEFINED$");
-        if (this.onOperationBroadcastListeners[data.docId]) {
-            this.onOperationBroadcastListeners[data.docId](data);
-        } else {
-            this.pendingOperation[data.docId]?.push(data.operation);
+        data.operation.command.params = deepRestoreUndefined(
+            data.operation.command.params,
+            '$UNDEFINED$'
+        );
+
+        const docId = data.docId;
+        if (this.onOperationBroadcastListeners[docId]) {
+            this.onOperationBroadcastListeners[docId](data);
+        }
+        else {
+            if (!this.pendingOperation[docId]) {
+                this.pendingOperation[docId] = new SortingOperationQueue();
+            }
+            this.pendingOperation[docId].push(data.operation);
         }
     }
 
@@ -228,7 +234,7 @@ export class CollabSocket extends Disposable {
             reconnection: true,
         });
 
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
             const onConnectError = (err: any) => {
                 console.error('Socket connection error:', err);
                 this.socket?.off('connect_error', onConnectError);
@@ -239,25 +245,25 @@ export class CollabSocket extends Disposable {
                 console.log('Socket connected');
                 this.socket?.off('connect_error', onConnectError);
                 this.socket?.off('connect', onConnect);
-                resolve(null);
+                resolve();
             };
             this.socket!.on('connect_error', onConnectError);
             this.socket!.on('connect', onConnect);
         });
-
-        // 소켓 disconnect(offline) 이벤트 등록
+        this.socket?.on(this.opEventName, this.onBroadcast);
         this.socket?.on('disconnect', this.onDisconnect);
         this.socket?.on('connect', this.onReconnect);
     }
 
     private closeSocket() {
         this.socket?.off('disconnect', this.onDisconnect);
-
         this.socket?.close();
         this.socket = undefined;
     }
 
     private onDisconnect(reason: string) {
+        this.socket?.off(this.opEventName, this.onBroadcast);
+
         console.log('Socket disconnected:', reason);
         Object.keys(this.offlineListeners).forEach(docId => {
             this.offlineListeners[docId](reason);
@@ -266,7 +272,6 @@ export class CollabSocket extends Disposable {
 
     private onReconnect() {
         console.log('Socket reconnected');
-
         Object.keys(this.reconnectListeners).forEach(docId => {
             this.reconnectListeners[docId]();
         });
@@ -275,7 +280,22 @@ export class CollabSocket extends Disposable {
     override dispose() {
         this.closeSocket();
     }
+
+    public setOnOfflineListener(docId: DocId, listener: (reason: string) => void) {
+        this.offlineListeners[docId] = listener;
+    }
+    public removeOnOfflineListener(docId: DocId) {
+        delete this.offlineListeners[docId];
+    }
+
+    public setOnReconnectListener(docId: DocId, listener: () => void) {
+        this.reconnectListeners[docId] = listener;
+    }
+    public removeOnReconnectListener(docId: DocId) {
+        delete this.reconnectListeners[docId];
+    }
 }
+
 function uuid8() {
     return 'xxxxxxxx'.replace(/x/g, () => {
         const r = (Math.random() * 16) | 0;
