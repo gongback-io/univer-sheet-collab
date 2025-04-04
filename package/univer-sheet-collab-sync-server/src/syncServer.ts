@@ -46,7 +46,8 @@ export class SyncServer implements ISheetSyncer {
         });
         this.postProcessor = new PostProcessor(
             workbookDelegateFactory,
-            workbookStorage
+            workbookStorage,
+            opStorage
         );
     }
 
