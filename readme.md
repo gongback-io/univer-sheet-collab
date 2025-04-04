@@ -106,7 +106,7 @@ new CollabSocketServer(io, {
     }),
     workbookStorage,
     opStorage,
-    sendToSyncServer: sendOverGrpc
+    sheetSyncer
 }).listen().then(() => {
     console.log('Socket server listening');
 });
@@ -142,8 +142,63 @@ syncServer.start().then(() => {
 
 
 ```
+### Implement the `ISheetSyncer` interface:
 
-Implement the `IWorkbookDelegate` interface:
+In addition to the interfaces and configurations mentioned above, you must also implement the ISheetSyncer interface. This interface enables communication with the SyncServer, allowing API servers or other backend instances to modify sheets.
+
+Below is an example implementation of the ISheetSyncer that communicates using gRPC:
+```typescript
+import {ExecResult, ExecRequest, ISheetSyncer} from "@gongback/univer-sheet-collab-socket-server";
+import {CreateDocGrpcRequest, CreateDocGrpcResult, SendOperationGrpcRequest, SendOperationGrpcResult} from "../types";
+import {grpcClient} from "./grpc/GrpcClient";
+import { IWorkbookData } from "@univerjs/core";
+
+class SheetSyncer implements ISheetSyncer {
+    createDoc(docId: string, initialWorkbookData?: Partial<IWorkbookData>): Promise<IWorkbookData> {
+        return new Promise((resolve, reject) => {
+            const grpcRequest: CreateDocGrpcRequest = {
+                docId,
+                initialWorkbookDataJson: JSON.stringify({rev:1, id: docId})
+            }
+            console.log('[grpcClient] createDoc request', grpcRequest);
+            grpcClient.CreateDoc(grpcRequest, (err: any, response: CreateDocGrpcResult) => {
+                console.log('[grpcClient] createDoc response', response);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(JSON.parse(response.workbookDataJson) as IWorkbookData);
+                }
+            });
+        });
+    }
+    execOperation(request: ExecRequest): Promise<ExecResult> {
+        return new Promise((resolve, reject) => {
+            const grpcRequest: SendOperationGrpcRequest = {
+                docId: request.docId,
+                collabId: request.collabId,
+                operationJson: JSON.stringify(request.operation)
+            }
+            console.log('[grpcClient] sync', grpcRequest);
+            grpcClient.SendOperation(grpcRequest, (err: any, response: SendOperationGrpcResult) => {
+                console.log('[grpcClient] sync', response);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({
+                        docId: response.docId,
+                        operation: JSON.parse(response.operationJson),
+                        isTransformed: response.isTransformed,
+                    } as ExecResult);
+                }
+            });
+        });
+    }
+}
+const sheetSyncer = new SheetSyncer();
+export default sheetSyncer;
+```
+
+### Implement the `IWorkbookDelegate` interface:
 
 The server library must communicate with a Univer instance that loads the same plugins as the client instance.
 

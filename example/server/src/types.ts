@@ -1,5 +1,4 @@
 import {DocId} from "@gongback/univer-sheet-collab";
-import { IWorkbookData } from "@univerjs/core";
 
 export type CreateDocGrpcRequest = {
     docId: DocId;
