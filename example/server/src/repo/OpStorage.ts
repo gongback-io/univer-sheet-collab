@@ -53,7 +53,7 @@ class OpStorage implements IOperationStorage {
         const rows = await readOperationsFile();
         const filtered = rows.filter(row => row.docId === docId);
         if (filtered.length === 0) {
-            return 0;
+            return 1;
         }
         return Math.max(...filtered.map(row => row.revision));
     }

@@ -1,9 +1,9 @@
 import {CollabSocketServer} from "@gongback/univer-sheet-collab-socket-server";
 import {workbookStorage} from "../repo/WorkbookStorage";
 import {opStorage} from "../repo/OpStorage";
-import {sendOverGrpc} from "../model/GrpcClient";
 import {Server} from 'socket.io';
 import {createClient as createRedisClient} from 'redis';
+import sheetSyncer from "../model/SheetSyncer";
 
 export function startSocketServer(io: Server) {
     new CollabSocketServer(io, {
@@ -12,7 +12,7 @@ export function startSocketServer(io: Server) {
         }),
         workbookStorage,
         opStorage,
-        sendToSyncServer: sendOverGrpc
+        sheetSyncer
     }).listen().then(() => {
         console.log('Socket server listening');
     });

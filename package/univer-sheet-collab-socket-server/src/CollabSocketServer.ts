@@ -15,7 +15,7 @@ import {
 import {IServer, ISocket, Subscriber} from "./types";
 
 import { IWorkbookData } from "@univerjs/core";
-import { SyncRequest, SyncResult} from "@gongback/univer-sheet-collab-sync-interface";
+import {ISheetSyncer, ExecRequest, ExecResult} from "@gongback/univer-sheet-collab-sync-interface";
 
 export type CollabSocketServerOptions = {
     opEmitEventName?: string;
@@ -25,7 +25,7 @@ export type CollabSocketServerOptions = {
     leaveEventName?: string;
 
     syncSubscriber: Subscriber
-    sendToSyncServer: (request: SyncRequest) => Promise<SyncResult>
+    sheetSyncer: ISheetSyncer,
     workbookStorage: IWorkbookStorage,
     opStorage: IOperationStorage
 };
@@ -42,7 +42,7 @@ export class CollabSocketServer {
     private readonly workbookStorage: IWorkbookStorage;
     private readonly opStorage: IOperationStorage;
 
-    private sendToSyncServer: (request: SyncRequest) => Promise<SyncResult>
+    private sheetSyncer: ISheetSyncer;
     private syncSubscriber :Subscriber;
     private docSubscriptions: Map<DocId, number> = new Map();
 
@@ -59,7 +59,7 @@ export class CollabSocketServer {
         this.joinEventName = options?.joinEventName || 'sheet-collab-join';
         this.leaveEventName = options?.leaveEventName || 'sheet-collab-leave';
 
-        this.sendToSyncServer = options.sendToSyncServer;
+        this.sheetSyncer = options.sheetSyncer;
 
         this.onConnect = this.onConnect.bind(this);
         this.onJoin = this.onJoin.bind(this);
@@ -81,16 +81,12 @@ export class CollabSocketServer {
 
                 const workbook = await this.workbookStorage.select(request.docId);
                 if (!workbook?.rev) {
-                    const newWorkbook = {
+
+                    const newWorkbook = await this.sheetSyncer.createDoc(request.docId, {
                         id: request.docId,
                         rev: 1
-                    } as IWorkbookData
+                    })
 
-                    await this.workbookStorage.insert(
-                        request.docId,
-                        newWorkbook.rev!,
-                        newWorkbook
-                    )
                     callback({
                         success: true,
                         data: {
@@ -158,13 +154,13 @@ export class CollabSocketServer {
             receivedOperation.command.params = decompress(request.operation.command.params);
             receivedOperation.command.params = deepRestoreUndefined(receivedOperation.command.params, "$UNDEFINED$");
 
-            const syncRequest:SyncRequest = {
+            const ExecRequest:ExecRequest = {
                 docId: request.docId,
                 collabId: collabId,
                 operation: receivedOperation
             };
 
-            const result:SyncResult = await this.sendToSyncServer(syncRequest);
+            const result:ExecResult = await this.sheetSyncer.execOperation(ExecRequest);
             const response: OpResponse = {
                 success: true,
                 operationId,

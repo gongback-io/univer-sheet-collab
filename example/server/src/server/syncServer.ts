@@ -3,7 +3,7 @@ import {opStorage} from "../repo/OpStorage";
 import {workbookStorage} from "../repo/WorkbookStorage";
 import {DocId} from "@gongback/univer-sheet-collab";
 import {WorkbookModel} from "../model/WorkbookModel";
-import {startGrpcServer} from "../model/GrpcServer";
+import {startGrpcServer} from "../model/grpc/GrpcServer";
 import {createClient as createRedisClient} from 'redis';
 
 export function startSyncServer() {

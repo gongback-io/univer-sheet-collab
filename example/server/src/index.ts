@@ -6,6 +6,7 @@ import {Server} from 'socket.io';
 import {workbookStorage} from "./repo/WorkbookStorage";
 import {startSocketServer} from "./server/socketServer";
 import {startSyncServer} from "./server/syncServer";
+import sheetSyncer from "./model/SheetSyncer";
 
 const app = express();
 const server = createServer(app);
@@ -25,6 +26,20 @@ app.get('/sheet/:docId', (req, res) => {
         res.json(sheet);
     })
 });
+app.post('/sheet/:docId', (req, res) => {
+    // API server also executes the operation
+    sheetSyncer.execOperation({
+        docId: req.params.docId,
+        collabId: 'test',
+        operation: req.body.operation
+    }).then((result) => {
+        console.log('execOperation', result);
+        res.json(result);
+    }).catch((err) => {
+        console.error('execOperation error', err);
+        res.status(500).json({error: 'Internal Server Error'});
+    })
+})
 
 const io = new Server(server, {
     cors: {

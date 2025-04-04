@@ -3,19 +3,28 @@ syntax = "proto3";
 package leader;
 
 service LeaderService {
-  // 소켓 서버 -> 리더 서버: OP 전송 후 결과 받기
   rpc SendOperation (OperationRequest) returns (OperationResponse);
+  rpc CreateDoc (CreateDocRequest) returns (CreateDocResponse);
 }
 
 message OperationRequest {
   string docId = 1;        // 문서 ID
   string collabId = 2;     // 협업 세션 ID
-  // operationJson: IOperation<T> 전체를 JSON 문자열로 직렬화해 전송 (TypeScript 객체 -> JSON)
   string operationJson = 3;
 }
 
 message OperationResponse {
   string docId = 1;        // 문서 ID
   string operationJson = 2;
-  bool isTransformed = 3;       // 성공 여부
+  bool isTransformed = 3;  // 성공 여부
+}
+
+message CreateDocRequest {
+  string docId = 1; // 문서 ID
+  string initialWorkbookDataJson = 2;
+}
+
+message CreateDocResponse {
+  string docId = 1; // 문서 ID
+  string workbookDataJson = 2;
 }

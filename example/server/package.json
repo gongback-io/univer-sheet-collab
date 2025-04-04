@@ -11,7 +11,7 @@
   "author": "Gongback",
   "license": "Apache-2.0",
   "dependencies": {
-    "ioredis": "^5.3.0",
+    "redis": "^4.7.0",
     "@grpc/grpc-js": "^1.10.1",
     "@grpc/proto-loader": "^0.7.10",
     "@gongback/univer-sheet-collab": "workspace:*",
