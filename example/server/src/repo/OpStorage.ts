@@ -49,11 +49,11 @@ class OpStorage implements IOperationStorage {
         return filtered.map(row => JSON.parse(row.operation));
     }
 
-    async selectMaxRevision(docId: string): Promise<RevisionId> {
+    async selectMaxRevision(docId: string): Promise<RevisionId | null> {
         const rows = await readOperationsFile();
         const filtered = rows.filter(row => row.docId === docId);
         if (filtered.length === 0) {
-            return 1;
+            return null;
         }
         return Math.max(...filtered.map(row => row.revision));
     }

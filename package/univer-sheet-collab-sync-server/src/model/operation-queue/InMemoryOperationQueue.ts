@@ -24,7 +24,7 @@ export class InMemoryOperationQueue implements IOperationQueue {
         if (!docOps) {
             docOps = {
                 ops: [],
-                currentRevision: await this.opStorage.selectMaxRevision(docId),
+                currentRevision: await this.opStorage.selectMaxRevision(docId) || 1,
                 timer: null,
             };
             console.log(`[InMemoryOperationQueue] createCache: ${docId} / ${docOps.currentRevision}`);
