@@ -1,4 +1,4 @@
-import {IWorkbookData, LifecycleStages, Univer, UniverInstanceType, Workbook} from '@univerjs/core';
+import {IResourceLoaderService, IWorkbookData, LifecycleStages, Univer, UniverInstanceType, Workbook} from '@univerjs/core';
 
 import '@univerjs/engine-formula/facade';
 import '@univerjs/sheets/facade';
@@ -50,7 +50,8 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
         if (!this.workbook) {
             throw new Error('Workbook is not initialized');
         }
-        return this.workbook.save();
+        const workbook = this.univer!.__getInjector().get(IResourceLoaderService).saveUnit(this.workbook.getUnitId())
+        return workbook as IWorkbookData;
     }
 
     public async dispose(): Promise<void> {
@@ -65,7 +66,8 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
         }
         this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, {fromCollab: true});
         this.workbook!.setRev(operation.revision);
-        return this.workbook!.save();
+
+        return this.getSnapshot();
     }
 
     async executeOperations(operations: IOperation[]): Promise<IWorkbookData> {
@@ -77,6 +79,6 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
             this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, {fromCollab: true});
             this.workbook.setRev(operation.revision);
         }
-        return this.workbook.save();
+        return this.getSnapshot();
     }
 }
