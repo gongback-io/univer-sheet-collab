@@ -37,7 +37,7 @@ export class PostProcessor {
             }
             let operations: IOperation[] = [];
             if (currentWorkbook.rev) {
-                operations = await this.operationStorage.selectAfter(docId, currentWorkbook.rev)
+                operations = await this.operationStorage.selectAfter(docId, currentWorkbook.rev+1)
             }
             const workbookDelegate = this.workbookDelegateFactory(docId)
             await workbookDelegate.createSheet(currentWorkbook)
