@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {RevisionStorage} from "./data/RevisionStorage";
 import {FWorkbook} from "@univerjs/sheets/facade";
@@ -54,6 +54,7 @@ import '@univerjs/find-replace/lib/index.css';
 
 export default function Sheet({docId}: {docId?: string}) {
     const navigate = useNavigate();
+    const fUniverRef = useRef<FUniver | null>(null);
     const [socket, setSocket] = useState<CollabSocket | null>(null);
     const [connected, setConnected] = useState(false);
     const [revision, setRevision] = useState<number>();
@@ -114,6 +115,7 @@ export default function Sheet({docId}: {docId?: string}) {
         });
 
         const fUniver = FUniver.newAPI(univer);
+        fUniverRef.current = fUniver;
         const fCollab = fUniver.getCollab();
         setSocket(fCollab.getSocket());
 
@@ -156,6 +158,10 @@ export default function Sheet({docId}: {docId?: string}) {
     const connect = () => {
         socket?.connect();
     }
+    const printLog = () => {
+        console.log(fUniverRef.current?.getActiveWorkbook()?.save());
+
+    }
 
     return (
         <div style={{width:'100%', height:'100%', display:'flex', flexDirection:'column'}}>
@@ -165,6 +171,7 @@ export default function Sheet({docId}: {docId?: string}) {
                 ): (
                     <button onClick={connect}>connect server</button>
                 )}
+                <button onClick={printLog}>print log</button>
                 <span>revision: {revision}</span>
 
             </div>
