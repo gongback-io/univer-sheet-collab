@@ -1,4 +1,4 @@
-import {ExecResult, ExecRequest, ISheetSyncer} from "@gongback/univer-sheet-collab-socket-server";
+import {ExecResult, ExecRequest, ISheetSyncer} from "@gongback/univer-sheet-collab";
 import {CreateDocGrpcRequest, CreateDocGrpcResult, SendOperationGrpcRequest, SendOperationGrpcResult} from "../types";
 import {grpcClient} from "./grpc/GrpcClient";
 import { IWorkbookData } from "@univerjs/core";
@@ -23,10 +23,19 @@ class SheetSyncer implements ISheetSyncer {
     }
     execOperation(request: ExecRequest): Promise<ExecResult> {
         return new Promise((resolve, reject) => {
+            const {
+                docId,
+                collabId,
+                operationId,
+                revision,
+                command
+            } = request;
             const grpcRequest: SendOperationGrpcRequest = {
-                docId: request.docId,
-                collabId: request.collabId,
-                operationJson: JSON.stringify(request.operation)
+                docId,
+                collabId,
+                operationId,
+                revision,
+                commandJson : JSON.stringify(command)
             }
             console.log('[grpcClient] sync', grpcRequest);
             grpcClient.SendOperation(grpcRequest, (err: any, response: SendOperationGrpcResult) => {

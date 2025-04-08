@@ -14,13 +14,11 @@ import {
     OpBroadcastResponse,
     OpRequest,
     OpResponse,
-} from "@gongback/univer-sheet-collab";
-import {IServer, ISocket, Subscriber} from "./types";
-import {
     ISheetSyncer,
     ExecRequest,
     ExecResult,
-} from "@gongback/univer-sheet-collab-sync-interface";
+} from "@gongback/univer-sheet-collab";
+import {IServer, ISocket, Subscriber} from "./types";
 import {IWorkbookData} from "@univerjs/core";
 
 export type CollabSocketServerOptions = {
@@ -172,8 +170,10 @@ export class CollabSocketServer {
             // 실제 문서 수정 로직 (SyncServer)
             const execRequest: ExecRequest = {
                 docId: request.docId,
-                collabId: socket.id, // 소켓 id를 collabId로 삼을 수도 있음
-                operation: receivedOperation,
+                collabId: socket.id,
+                operationId: receivedOperation.operationId,
+                revision: receivedOperation.revision,
+                command: receivedOperation.command
             };
 
             const result: ExecResult = await this.sheetSyncer.execOperation(execRequest);

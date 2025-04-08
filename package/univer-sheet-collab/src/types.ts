@@ -66,3 +66,19 @@ export type IRevisionWorkbook = {
     workbookData: IWorkbookData
     at: Date
 }
+export interface ISheetSyncer {
+    createDoc(docId: string, initialWorkbookData?: Partial<IWorkbookData>): Promise<IWorkbookData>
+    execOperation(request: ExecRequest): Promise<ExecResult>
+}
+export type ExecRequest = {
+    docId: string;
+    collabId: string;
+    operationId?: OperationId;
+    revision?: RevisionId;
+    command: ICommandInfo;
+}
+export type ExecResult = {
+    docId: string,
+    operation: IOperation,
+    isTransformed: boolean,
+}

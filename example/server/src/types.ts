@@ -1,4 +1,4 @@
-import {DocId} from "@gongback/univer-sheet-collab";
+import {DocId, OperationId, RevisionId} from "@gongback/univer-sheet-collab";
 
 export type CreateDocGrpcRequest = {
     docId: DocId;
@@ -9,9 +9,11 @@ export type CreateDocGrpcResult = {
     workbookDataJson: string
 }
 export type SendOperationGrpcRequest = {
-    docId: DocId;
+    docId: string;
     collabId: string;
-    operationJson: string;
+    operationId?: OperationId;
+    revision?: RevisionId;
+    commandJson: string;
 }
 export type SendOperationGrpcResult = {
     docId: string,

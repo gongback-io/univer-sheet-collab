@@ -10,7 +10,9 @@ service LeaderService {
 message OperationRequest {
   string docId = 1;        // 문서 ID
   string collabId = 2;     // 협업 세션 ID
-  string operationJson = 3;
+  string operationId = 3;
+  int32 revision = 4;      // Changed from "number" to "int32"
+  string commandJson = 5;  // Added semicolon at the end
 }
 
 message OperationResponse {

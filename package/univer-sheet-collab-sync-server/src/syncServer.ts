@@ -1,17 +1,19 @@
 import {DocQueueManager} from './model/doc-queue-manager/DocQueueManager';
 import {
-    DocId,
+    DocId, IOperation,
     IOperationStorage,
     IWorkbookStorage,
+    uuidv4,
+    ExecRequest,
+    ExecResult,
+    ISheetSyncer
 } from '@gongback/univer-sheet-collab';
 
 import {OTHandler} from './model/OTHandler';
 import {Publisher, WorkbookDelegateFactory} from './types';
 import {PostProcessor} from "./model/PostProcessor";
 import {InMemoryOperationQueue} from "./model/operation-queue/InMemoryOperationQueue";
-import {ExecRequest, ExecResult} from "@gongback/univer-sheet-collab-sync-interface";
 import {IWorkbookData} from '@univerjs/core';
-import {ISheetSyncer} from "@gongback/univer-sheet-collab-sync-interface";
 
 export class SyncServer implements ISheetSyncer {
     private operationStorage: IOperationStorage
@@ -81,30 +83,44 @@ export class SyncServer implements ISheetSyncer {
 
     async execOperation(options: ExecRequest): Promise<ExecResult> {
         try {
-            const docId = options.docId;
+            const {
+                docId,
+                collabId,
+                operationId,
+                revision,
+                command
+            } = options;
+
             return await this.docQueueManager.enqueue(docId, async () => {
-                const workbook = await this.workbookStorage.select(docId);
+                let workbook = await this.workbookStorage.select(docId);
                 if (!workbook) {
-                    await this.createDoc(docId)
+                    workbook = await this.createDoc(docId)
+                }
+
+                const requestOperation: IOperation = {
+                    collabId,
+                    operationId: operationId || uuidv4(),
+                    revision: revision || (await this.operationStorage.selectMaxRevision(docId)) || workbook.rev!,
+                    command
                 }
                 const {
-                    operation,
+                    operation: transformedOperation,
                     isSheetChangeOp,
                     isTransformed
                 } = await this.otHandler.handleTransform(
                     options.collabId,
                     docId,
-                    options.operation
+                    requestOperation
                 );
-                await this.postProcessor.postProcess(docId, operation, isSheetChangeOp);
+                await this.postProcessor.postProcess(docId, transformedOperation, isSheetChangeOp);
 
                 const result: ExecResult = {
                     docId,
-                    operation,
+                    operation: transformedOperation,
                     isTransformed,
                 }
 
-                await this.syncPublisher.publish(`doc:${docId}:op`, JSON.stringify(operation));
+                await this.syncPublisher.publish(`doc:${docId}:op`, JSON.stringify(transformedOperation));
                 return result;
             });
         } catch (error) {

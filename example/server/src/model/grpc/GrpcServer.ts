@@ -1,5 +1,5 @@
-import {DocId, IOperation} from "@gongback/univer-sheet-collab";
-import {SyncServer, ExecResult} from "@gongback/univer-sheet-collab-sync-server";
+import {DocId, ExecResult} from "@gongback/univer-sheet-collab";
+import {SyncServer} from "@gongback/univer-sheet-collab-sync-server";
 import * as grpc from '@grpc/grpc-js';
 import {CreateDocGrpcRequest, CreateDocGrpcResult, SendOperationGrpcRequest, SendOperationGrpcResult} from "../../types";
 import {leaderProto} from "../../proto";
@@ -34,14 +34,21 @@ export function startGrpcServer(syncServer: SyncServer) {
         SendOperation: (call: grpc.ServerUnaryCall<SendOperationGrpcRequest, any>, callback: grpc.sendUnaryData<SendOperationGrpcResult>) => {
             const request:SendOperationGrpcRequest = call.request; // OperationRequest
             console.log('[grpcServer] grpcRequest', request);
-            const docId: DocId = request.docId;
-            const collabId = request.collabId;
-            const operation = JSON.parse(request.operationJson) as IOperation;
+
+            const {
+                docId,
+                collabId,
+                operationId,
+                revision,
+                commandJson
+            } = request;
 
             syncServer.execOperation({
                 docId,
                 collabId,
-                operation,
+                operationId,
+                revision,
+                command: JSON.parse(commandJson),
             }).then((result: ExecResult) => {
                 const grpcResult:SendOperationGrpcResult = {
                     docId: result.docId,

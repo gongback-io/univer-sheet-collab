@@ -311,9 +311,6 @@ importers:
 
   package/univer-sheet-collab-socket-server:
     dependencies:
-      '@gongback/univer-sheet-collab-sync-interface':
-        specifier: ^0.6.10
-        version: 0.6.10(@gongback/univer-sheet-collab@file:package/univer-sheet-collab(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2))
       '@univerjs/core':
         specifier: ^0.6.0
         version: 0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2)
@@ -352,17 +349,8 @@ importers:
         specifier: ~5.7.3
         version: 5.7.3
 
-  package/univer-sheet-collab-sync-interface:
-    dependencies:
-      '@gongback/univer-sheet-collab':
-        specifier: ^0.6.0
-        version: 0.6.4(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2)
-
   package/univer-sheet-collab-sync-server:
     dependencies:
-      '@gongback/univer-sheet-collab-sync-interface':
-        specifier: ^0.6.10
-        version: 0.6.10(@gongback/univer-sheet-collab@file:package/univer-sheet-collab(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2))
       '@univerjs/core':
         specifier: ^0.6.0
         version: 0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2)
@@ -800,26 +788,6 @@ packages:
 
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
-
-  '@gongback/univer-sheet-collab-sync-interface@0.6.10':
-    resolution: {integrity: sha512-QRz4Xs5+RS4/Vcex954qvoxPUo3q9/9XmDQ7DZBM5masQ5/gicO7xWs16bhc+YevwVcACmqaKmH5eQdTDfm6bA==}
-    version: 0.6.10
-    peerDependencies:
-      '@gongback/univer-sheet-collab': ^0.6.0
-
-  '@gongback/univer-sheet-collab@0.6.4':
-    resolution: {integrity: sha512-ofur6D3NjYf6+LQ8tZ8A56nBiWCXUNn8kCM4JGWWWIgSEP11FXBiAw0LR6aktivAW6Wwp/DZn0maoIn69G/vAA==}
-    peerDependencies:
-      '@univerjs/core': ^0.6.0
-      '@univerjs/sheets': ^0.6.0
-      rxjs: '>=7.0.0'
-
-  '@gongback/univer-sheet-collab@file:package/univer-sheet-collab':
-    resolution: {directory: package/univer-sheet-collab, type: directory}
-    peerDependencies:
-      '@univerjs/core': ^0.6.0
-      '@univerjs/sheets': ^0.6.0
-      rxjs: '>=7.0.0'
 
   '@grpc/grpc-js@1.13.2':
     resolution: {integrity: sha512-nnR5nmL6lxF8YBqb6gWvEgLdLh/Fn+kvAdX5hUOnt48sNSb0riz/93ASd2E5gvanPA41X6Yp25bIfGRp1SMb2g==}
@@ -4766,22 +4734,6 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@floating-ui/utils@0.2.9': {}
-
-  '@gongback/univer-sheet-collab-sync-interface@0.6.10(@gongback/univer-sheet-collab@file:package/univer-sheet-collab(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2))':
-    dependencies:
-      '@gongback/univer-sheet-collab': file:package/univer-sheet-collab(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2)
-
-  '@gongback/univer-sheet-collab@0.6.4(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2)':
-    dependencies:
-      '@univerjs/core': 0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2)
-      '@univerjs/sheets': 0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2)
-      rxjs: 7.8.2
-
-  '@gongback/univer-sheet-collab@file:package/univer-sheet-collab(@univerjs/core@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(@univerjs/sheets@0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2))(rxjs@7.8.2)':
-    dependencies:
-      '@univerjs/core': 0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2)
-      '@univerjs/sheets': 0.6.5(@grpc/grpc-js@1.13.2)(@wendellhu/redi@0.17.1)(rxjs@7.8.2)
-      rxjs: 7.8.2
 
   '@grpc/grpc-js@1.13.2':
     dependencies:

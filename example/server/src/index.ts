@@ -27,11 +27,12 @@ app.get('/sheet/:docId', (req, res) => {
     })
 });
 app.post('/sheet/:docId', (req, res) => {
+
     // API server also executes the operation
     sheetSyncer.execOperation({
         docId: req.params.docId,
-        collabId: 'test',
-        operation: req.body.operation
+        collabId: 'SYSTEM',
+        command: req.body.command
     }).then((result) => {
         console.log('execOperation', result);
         res.json(result);
