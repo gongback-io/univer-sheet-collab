@@ -20,6 +20,13 @@ export class OTHandler {
 
     async handleTransform(collabId: string, docId: DocId, operation:IOperation): Promise<{operation: IOperation, isTransformed: boolean, isSheetChangeOp: boolean}> {
         try {
+            if (operation.command.type !== 2) {
+                return {
+                    operation: operation,
+                    isTransformed: false,
+                    isSheetChangeOp: false,
+                };
+            }
             const operationModel = transformModelFactory.createOperationModel(operation);
             const {operationModel: transformedModel} = await this._handleOperationModel(docId, operationModel);
             transformedModel.revision += 1

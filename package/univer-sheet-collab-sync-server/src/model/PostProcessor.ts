@@ -5,20 +5,18 @@ import {
     IOperationStorage,
     IWorkbookStorage
 } from "@gongback/univer-sheet-collab";
-import {WorkbookDelegateFactory} from "../types";
+import {IWorkbookDelegate} from "./workbook-delegate/IWorkbookDelegate";
 
 export class PostProcessor {
-    private workbookDelegateFactory: WorkbookDelegateFactory;
     private workbookStorage: IWorkbookStorage;
     private operationStorage: IOperationStorage;
 
-    constructor(workbookDelegateFactory: WorkbookDelegateFactory, workbookStorage: IWorkbookStorage, operationStorage: IOperationStorage) {
-        this.workbookDelegateFactory = workbookDelegateFactory;
+    constructor(workbookStorage: IWorkbookStorage, operationStorage: IOperationStorage) {
         this.workbookStorage = workbookStorage;
         this.operationStorage = operationStorage;
     }
 
-    async postProcess(docId: DocId, transformedOperation: IOperation, isSheetChangeOp:boolean) {
+    async postProcess(docId: DocId, workbookDelegate: IWorkbookDelegate, transformedOperation: IOperation, isSheetChangeOp:boolean): Promise<boolean> {
         const transformed = transformedOperation;
         if (transformed.command.id === "collab.mutation.apply-revision") {
             const params = transformed.command.params as IApplayRevisionMutationParams
@@ -28,29 +26,27 @@ export class PostProcessor {
             }
             revisionWorkbookData.rev = transformed.revision
             await this.workbookStorage.insert(docId, transformed.revision, revisionWorkbookData)
-            return;
+            return false;
         }
+        const currentWorkbook = await this.workbookStorage.select(docId);
+        if (!currentWorkbook) {
+            throw new Error(`Cannot find workbook: ${docId}`);
+        }
+        let operations: IOperation[] = [];
+        if (currentWorkbook.rev) {
+            operations = await this.operationStorage.selectAfter(docId, currentWorkbook.rev)
+        }
+        await workbookDelegate.createSheet(currentWorkbook)
+
+        console.log(transformed.command.id)
+        const workbookData = await workbookDelegate.executeOperations([
+            ...operations.filter(operation => operation.operationId !== transformedOperation.operationId),
+            transformed,
+        ], {onlyLocal: true, fromCollab: true})
         if (isSheetChangeOp) {
-            const currentWorkbook = await this.workbookStorage.select(docId);
-            if (!currentWorkbook) {
-                throw new Error(`Cannot find workbook: ${docId}`);
-            }
-            let operations: IOperation[] = [];
-            if (currentWorkbook.rev) {
-                operations = await this.operationStorage.selectAfter(docId, currentWorkbook.rev+1)
-            }
-            const workbookDelegate = this.workbookDelegateFactory(docId)
-            await workbookDelegate.createSheet(currentWorkbook)
-
-            const workbookData = await workbookDelegate.executeOperations([
-                ...operations,
-                transformed,
-            ])
-
-            await workbookDelegate.dispose();
             await this.workbookStorage.insert(docId, transformed.revision, workbookData)
         }
 
-        return;
+        return true;
     }
 }

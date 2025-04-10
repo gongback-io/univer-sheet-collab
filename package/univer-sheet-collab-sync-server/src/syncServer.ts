@@ -50,7 +50,6 @@ export class SyncServer implements ISheetSyncer {
             operationQueue: operationQueue,
         });
         this.postProcessor = new PostProcessor(
-            workbookDelegateFactory,
             workbookStorage,
             operationStorage
         );
@@ -112,15 +111,31 @@ export class SyncServer implements ISheetSyncer {
                     docId,
                     requestOperation
                 );
-                await this.postProcessor.postProcess(docId, transformedOperation, isSheetChangeOp);
-
+                const workbookDelegate = this.workbookDelegateFactory(docId)
+                await workbookDelegate.onOperationExecuted(async (operation, options) => {
+                    console.log(`[LeaderServer] onOperationExecuted`, operation, options);
+                    if (options?.fromCollab || options?.onlyLocal) {
+                        return;
+                    }
+                    this.execOperation({
+                        docId,
+                        collabId: operation.collabId,
+                        operationId: operation.operationId,
+                        revision:operation.revision,
+                        command:operation.command
+                    });
+                })
+                const needPublish = await this.postProcessor.postProcess(docId, workbookDelegate, transformedOperation, isSheetChangeOp);
+                await workbookDelegate.dispose();
                 const result: ExecResult = {
                     docId,
                     operation: transformedOperation,
                     isTransformed,
                 }
 
-                await this.syncPublisher.publish(`doc:${docId}:op`, JSON.stringify(transformedOperation));
+                if (needPublish) {
+                    await this.syncPublisher.publish(`doc:${docId}:op`, JSON.stringify(transformedOperation));
+                }
                 return result;
             });
         } catch (error) {
@@ -136,9 +151,10 @@ export class SyncServer implements ISheetSyncer {
         }
         const operations = await this.operationStorage.selectAfter(docId, workbook.rev)
         if (operations.length > 0) {
+            console.log('[LeaderServer] onFreeCache.saveSheet ', operations);
             const workbookDelegate = this.workbookDelegateFactory(docId)
             await workbookDelegate.createSheet(workbook)
-            const workbookData = await workbookDelegate.executeOperations(operations)
+            const workbookData = await workbookDelegate.executeOperations(operations, {onlyLocal: true, fromCollab: true})
             await workbookDelegate.dispose();
             await this.workbookStorage.insert(docId, workbookData.rev!, workbookData)
         }

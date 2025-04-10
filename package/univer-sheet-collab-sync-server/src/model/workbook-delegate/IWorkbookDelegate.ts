@@ -1,11 +1,12 @@
 import {DocId, IOperation} from "@gongback/univer-sheet-collab";
-import { IWorkbookData } from "@univerjs/core";
+import {ICommandInfo, IExecutionOptions, IWorkbookData } from "@univerjs/core";
 
+export type OnOperationExecutedCallback = (command: IOperation, options?: IExecutionOptions) => void;
 export interface IWorkbookDelegate {
     readonly docId: DocId;
     createSheet(workbookData: Partial<IWorkbookData>): Promise<void>;
-    executeOperation(operation: IOperation): Promise<IWorkbookData>;
-    executeOperations(operation: IOperation[]): Promise<IWorkbookData>;
+    onOperationExecuted(listener:OnOperationExecutedCallback): Promise<void>
+    executeOperations(operation: IOperation[], options?:IExecutionOptions): Promise<IWorkbookData>;
     getSnapshot(): Promise<IWorkbookData>
     dispose(): Promise<void>;
 }

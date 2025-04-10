@@ -9,6 +9,8 @@ import {startSyncServer} from "./server/syncServer";
 import sheetSyncer from "./model/SheetSyncer";
 
 const app = express();
+app.use(express.json());
+
 const server = createServer(app);
 app.all("*", (req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");

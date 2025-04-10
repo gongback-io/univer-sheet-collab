@@ -1,4 +1,4 @@
-import {IResourceLoaderService, IWorkbookData, LifecycleStages, Univer, UniverInstanceType, Workbook} from '@univerjs/core';
+import {IExecutionOptions, IResourceLoaderService, IWorkbookData, LifecycleStages, Univer, UniverInstanceType, Workbook} from '@univerjs/core';
 
 import '@univerjs/engine-formula/facade';
 import '@univerjs/sheets/facade';
@@ -6,22 +6,25 @@ import '@univerjs/sheets-numfmt/facade';
 import '@univerjs/sheets-filter/facade';
 import '@univerjs/sheets-sort/facade';
 
-import {DocId, IOperation} from "@gongback/univer-sheet-collab";
+import {DocId, IOperation, uuidv4} from "@gongback/univer-sheet-collab";
 import { FUniver } from '@univerjs/core/facade';
-import {IWorkbookDelegate} from "./IWorkbookDelegate";
+import {IWorkbookDelegate, OnOperationExecutedCallback} from "./IWorkbookDelegate";
+import {RichTextEditingMutation} from "@univerjs/docs";
+
 
 export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     readonly docId: DocId;
     private univer?: Univer;
     private univerAPI?: FUniver;
     private workbook?: Workbook;
+    private onOperationExecutedCallback: OnOperationExecutedCallback | null = null;
 
     constructor(docId: string) {
         this.docId = docId;
 
         this.getSnapshot = this.getSnapshot.bind(this);
         this.dispose = this.dispose.bind(this);
-        this.executeOperation = this.executeOperation.bind(this);
+        this.executeOperations = this.executeOperations.bind(this);
         this.createSheet = this.createSheet.bind(this);
     }
 
@@ -33,6 +36,9 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
 
         this.univer = univer;
         this.univerAPI = FUniver.newAPI(univer);
+        if (this.onOperationExecutedCallback) {
+            this.registOnOperationExecuted();
+        }
 
         return new Promise(async (resolve) => {
             this.univerAPI!.addEvent('LifeCycleChanged', async (e) => {
@@ -45,8 +51,25 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
         });
     }
 
+    private registOnOperationExecuted() {
+        this.univerAPI?.onCommandExecuted((command, options) => {
+            console.log('[LocalWorkbookDelegate] onCommandExecuted', command, options);
+            if (options?.fromCollab || options?.onlyLocal) {
+                return;
+            }
+            if (command.type === 2 && command.id !== RichTextEditingMutation.id) {
+                const operation:IOperation = {
+                    collabId: "WORKBOOK_DELEGATOR",
+                    operationId: uuidv4(),
+                    revision: this.workbook!.getRev(),
+                    command: JSON.parse(JSON.stringify(command)),
+                }
+                this.onOperationExecutedCallback!(operation, options);
+            }
+        });
+    }
+
     public async getSnapshot(): Promise<IWorkbookData> {
-        console.log('[LocalWorkbookDelegate] getSnapshot');
         if (!this.workbook) {
             throw new Error('Workbook is not initialized');
         }
@@ -55,28 +78,24 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     }
 
     public async dispose(): Promise<void> {
-        console.log('[LocalWorkbookDelegate] dispose');
         this.univer?.dispose();
     }
 
-    async executeOperation(operation: IOperation): Promise<IWorkbookData> {
-        console.log('[LocalWorkbookDelegate] executeOperation', operation);
-        if (!this.workbook) {
-            throw new Error('Workbook is not initialized');
+    async onOperationExecuted(listener:OnOperationExecutedCallback): Promise<void>{
+        if (this.univerAPI) {
+            this.registOnOperationExecuted();
+        } else {
+            this.onOperationExecutedCallback = listener;
         }
-        this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, {fromCollab: true});
-        this.workbook!.setRev(operation.revision);
-
-        return this.getSnapshot();
     }
 
-    async executeOperations(operations: IOperation[]): Promise<IWorkbookData> {
+    async executeOperations(operations: IOperation[], options?:IExecutionOptions): Promise<IWorkbookData> {
         console.log('[LocalWorkbookDelegate] executeOperations', operations);
         if (!this.workbook) {
             throw new Error('Workbook is not initialized');
         }
         for (const operation of operations) {
-            this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, {fromCollab: true});
+            this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, options);
             this.workbook.setRev(operation.revision);
         }
         return this.getSnapshot();

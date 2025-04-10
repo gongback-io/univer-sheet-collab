@@ -16,7 +16,7 @@ export class InMemoryOperationQueue implements IOperationQueue {
 
     constructor(
         private opStorage: IOperationStorage,
-        private onAllFreedListener: (docId: DocId) => void
+        private onAllFreedListener: (docId: DocId) => Promise<void>
     ) {}
 
     private async getCache(docId: DocId): Promise<InMemoryDocOps>  {
@@ -74,11 +74,13 @@ export class InMemoryOperationQueue implements IOperationQueue {
         }
 
         docOps.timer = setTimeout(() => {
-            this.freeDoc(docId);
+            this.freeDoc(docId).catch(e => {
+                console.error("[InMemoryOperationQueue] freeDoc error:", e);
+            })
         }, this.CACHE_DURATION_MS);
     }
 
-    private freeDoc(docId: DocId) {
+    private async freeDoc(docId: DocId) {
         const docOps = this.docCache.get(docId);
         if (!docOps) return;
 
@@ -89,13 +91,13 @@ export class InMemoryOperationQueue implements IOperationQueue {
         this.docCache.delete(docId);
 
         if (this.docCache.size === 0) {
-            this.onAllFreed(docId);
+            await this.onAllFreed(docId);
         }
     }
 
-    private onAllFreed(docId: DocId) {
+    private async onAllFreed(docId: DocId) {
         console.log('[InMemoryOperationQueue] All docIds freed. (Memory cleared)');
-        this.onAllFreedListener?.(docId);
+        await this.onAllFreedListener?.(docId);
     }
 }
 

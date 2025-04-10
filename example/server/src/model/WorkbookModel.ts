@@ -12,6 +12,7 @@ import SheetsFormulaEnUS from '@univerjs/sheets-formula/locale/en-US';
 import FindReplaceEnUS from '@univerjs/find-replace/locale/en-US';
 import SheetsFindReplaceEnUS from '@univerjs/sheets-find-replace/locale/en-US';
 import {LocalWorkbookDelegate} from "@gongback/univer-sheet-collab-sync-server";
+import {DataPlugin} from "./sheet/data-plugin/plugin";
 
 
 export class WorkbookModel extends LocalWorkbookDelegate {
@@ -47,6 +48,7 @@ export class WorkbookModel extends LocalWorkbookDelegate {
         univer.registerPlugin(UniverSheetsFilterPlugin);
         univer.registerPlugin(UniverSheetsSortPlugin);
         univer.registerPlugin(UniverSheetsNumfmtPlugin);
+        univer.registerPlugin(DataPlugin);
         // univer.registerPlugin(UniverSheetCollabPlugin);
         // univer.registerPlugin(UniverSheetCollabServerPlugin);
     }

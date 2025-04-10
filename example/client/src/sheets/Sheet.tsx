@@ -3,7 +3,7 @@ import {useNavigate} from "react-router-dom";
 import {RevisionStorage} from "./data/RevisionStorage";
 import {FWorkbook} from "@univerjs/sheets/facade";
 
-import { LocaleType, merge, Univer } from "@univerjs/core";
+import {ICommandInfo, LocaleType, merge, Univer } from "@univerjs/core";
 import { FUniver } from "@univerjs/core/facade";
 import { defaultTheme } from "@univerjs/design";
 
@@ -50,6 +50,7 @@ import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula-ui/lib/index.css";
 import "@univerjs/sheets-numfmt-ui/lib/index.css";
 import '@univerjs/find-replace/lib/index.css';
+import {putCellData} from "./action";
 
 
 export default function Sheet({docId}: {docId?: string}) {
@@ -58,6 +59,8 @@ export default function Sheet({docId}: {docId?: string}) {
     const [socket, setSocket] = useState<CollabSocket | null>(null);
     const [connected, setConnected] = useState(false);
     const [revision, setRevision] = useState<number>();
+
+    const [loadingPutCell, setLoadingPutCell] = useState(false);
 
     useEffect(() => {
         if (!docId) {
@@ -160,7 +163,44 @@ export default function Sheet({docId}: {docId?: string}) {
     }
     const printLog = () => {
         console.log(fUniverRef.current?.getActiveWorkbook()?.save());
+    }
 
+    const putCellTest = async (rowKey: string, columnKey: string, value: string) => {
+        if (!docId) {
+            return;
+        }
+        if (!fUniverRef.current) {
+            return;
+        }
+        const workbook = fUniverRef.current.getWorkbook(docId);
+        if (!workbook) {
+            return;
+        }
+        try {
+            const sheetId = workbook.getActiveSheet().getSheetId()
+            setLoadingPutCell(true);
+            const params = {
+                unitId: docId,
+                subUnitId: sheetId,
+                columnKey,
+                rows: [
+                    {
+                        rowKey,
+                        value
+                    }
+                ]
+            }
+            const command: ICommandInfo = {
+                id: "gongback.command.data-handle",
+                type: 1,
+                params
+            }
+            await putCellData(docId, command)
+        } catch  (e) {
+            alert((e as any).message);
+        } finally {
+            setLoadingPutCell(false);
+        }
     }
 
     return (
@@ -172,6 +212,17 @@ export default function Sheet({docId}: {docId?: string}) {
                     <button onClick={connect}>connect server</button>
                 )}
                 <button onClick={printLog}>print log</button>
+                <button
+                    onClick={async () => {
+                        await putCellTest("userId1", "name", "userId1 NAME")
+                        await putCellTest("userId1", "school", "userId1 SCHOOL")
+                        await putCellTest("userId2", "name", "userId2 NAME")
+                        await putCellTest("userId2", "school", "userId2 SCHOOL")
+                    }}
+                    disabled={loadingPutCell}
+                >
+                    {loadingPutCell ? "loading.." : "test put cell"}
+                </button>
                 <span>revision: {revision}</span>
 
             </div>
