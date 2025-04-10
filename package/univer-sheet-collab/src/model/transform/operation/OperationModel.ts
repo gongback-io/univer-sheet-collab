@@ -22,7 +22,7 @@ export class OperationModel<T extends Object = object> implements IOperationMode
 
     constructor(source: IOperation<T>, transformable: ITransformable, transformer: ITransformer, options?: TransformableOperationOptions) {
         if (transformer.id !== transformable.id) {
-            throw new Error('transformable id must be the same as the transformer id');
+            throw new Error(`transformable id must be the same as the transformer id: ${transformer.id}, ${transformable.id}`);
         }
         this.id = transformer.id;
         this.transformable = transformable;

@@ -16,6 +16,8 @@ export class SheetMutationRemoveRowTransformer extends CommandTransformer<IRemov
     }
 }
 export class SheetMutationRemoveRowTransformable extends CommandTransformable<IRemoveRowsMutationParams> {
+    public static override id = 'sheet.mutation.remove-row';
+
     override getRangePayload(): RangePayload[] | undefined {
         const params = this.command.params!;
         return [
