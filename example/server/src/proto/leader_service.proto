@@ -19,6 +19,7 @@ message OperationResponse {
   string docId = 1;        // 문서 ID
   string operationJson = 2;
   bool isTransformed = 3;  // 성공 여부
+  string execResultJson = 4;
 }
 
 message CreateDocRequest {

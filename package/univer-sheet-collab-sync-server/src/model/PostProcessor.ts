@@ -16,7 +16,10 @@ export class PostProcessor {
         this.operationStorage = operationStorage;
     }
 
-    async postProcess(docId: DocId, workbookDelegate: IWorkbookDelegate, transformedOperation: IOperation, isSheetChangeOp:boolean): Promise<boolean> {
+    async postProcess(docId: DocId, workbookDelegate: IWorkbookDelegate, transformedOperation: IOperation, isSheetChangeOp:boolean): Promise<{
+        needPublish: boolean,
+        execResult: any
+    }> {
         const transformed = transformedOperation;
         if (transformed.command.id === "collab.mutation.apply-revision") {
             const params = transformed.command.params as IApplayRevisionMutationParams
@@ -26,7 +29,10 @@ export class PostProcessor {
             }
             revisionWorkbookData.rev = transformed.revision
             await this.workbookStorage.insert(docId, transformed.revision, revisionWorkbookData)
-            return false;
+            return {
+                needPublish: false,
+                execResult: true
+            };
         }
         const currentWorkbook = await this.workbookStorage.select(docId);
         if (!currentWorkbook) {
@@ -39,14 +45,17 @@ export class PostProcessor {
         await workbookDelegate.createSheet(currentWorkbook)
 
         console.log(transformed.command.id)
-        const workbookData = await workbookDelegate.executeOperations([
+        const {workbookData, results} = await workbookDelegate.executeOperations([
             ...operations.filter(operation => operation.operationId !== transformedOperation.operationId),
             transformed,
         ], {onlyLocal: true, fromCollab: true})
         if (isSheetChangeOp) {
             await this.workbookStorage.insert(docId, transformed.revision, workbookData)
         }
-
-        return true;
+        const result = results[results.length - 1];
+        return {
+            needPublish: true,
+            execResult: result
+        };
     }
 }

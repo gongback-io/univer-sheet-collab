@@ -89,15 +89,21 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
         }
     }
 
-    async executeOperations(operations: IOperation[], options?:IExecutionOptions): Promise<IWorkbookData> {
+    async executeOperations(operations: IOperation[], options?:IExecutionOptions): Promise<{ workbookData: IWorkbookData, results: any[] }> {
         console.log('[LocalWorkbookDelegate] executeOperations', operations);
         if (!this.workbook) {
             throw new Error('Workbook is not initialized');
         }
+        const results = [];
         for (const operation of operations) {
-            this.univerAPI?.syncExecuteCommand(operation.command.id, operation.command.params, options);
+            const result = this.univerAPI?.syncExecuteCommand<any, any>(operation.command.id, operation.command.params, options);
+            results.push(result);
             this.workbook.setRev(operation.revision);
         }
-        return this.getSnapshot();
+        const workbookData = await this.getSnapshot();
+        return {
+            workbookData,
+            results
+        };
     }
 }

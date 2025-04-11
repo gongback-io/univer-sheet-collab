@@ -19,4 +19,5 @@ export type SendOperationGrpcResult = {
     docId: string,
     operationJson: string;
     isTransformed: boolean,
+    execResultJson: string
 }

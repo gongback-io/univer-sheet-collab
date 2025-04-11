@@ -54,6 +54,7 @@ export function startGrpcServer(syncServer: SyncServer) {
                     docId: result.docId,
                     operationJson: JSON.stringify(result.operation),
                     isTransformed: result.isTransformed,
+                    execResultJson: JSON.stringify(result.execResult)
                 };
                 console.log('[grpcServer] grpcResponse', grpcResult);
                 callback(null, grpcResult);

@@ -125,12 +125,13 @@ export class SyncServer implements ISheetSyncer {
                         command:operation.command
                     });
                 })
-                const needPublish = await this.postProcessor.postProcess(docId, workbookDelegate, transformedOperation, isSheetChangeOp);
+                const {needPublish, execResult} = await this.postProcessor.postProcess(docId, workbookDelegate, transformedOperation, isSheetChangeOp);
                 await workbookDelegate.dispose();
                 const result: ExecResult = {
                     docId,
                     operation: transformedOperation,
                     isTransformed,
+                    execResult
                 }
 
                 if (needPublish) {
@@ -154,7 +155,7 @@ export class SyncServer implements ISheetSyncer {
             console.log('[LeaderServer] onFreeCache.saveSheet ', operations);
             const workbookDelegate = this.workbookDelegateFactory(docId)
             await workbookDelegate.createSheet(workbook)
-            const workbookData = await workbookDelegate.executeOperations(operations, {onlyLocal: true, fromCollab: true})
+            const {workbookData} = await workbookDelegate.executeOperations(operations, {onlyLocal: true, fromCollab: true})
             await workbookDelegate.dispose();
             await this.workbookStorage.insert(docId, workbookData.rev!, workbookData)
         }

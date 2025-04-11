@@ -47,6 +47,7 @@ class SheetSyncer implements ISheetSyncer {
                         docId: response.docId,
                         operation: JSON.parse(response.operationJson),
                         isTransformed: response.isTransformed,
+                        execResult: JSON.parse(response.execResultJson)
                     } as ExecResult);
                 }
             });

@@ -81,4 +81,5 @@ export type ExecResult = {
     docId: string,
     operation: IOperation,
     isTransformed: boolean,
+    execResult: any
 }
