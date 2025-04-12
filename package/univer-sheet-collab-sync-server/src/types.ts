@@ -1,7 +1,7 @@
-import {DocId} from "@gongback/univer-sheet-collab";
+import {CollabId, DocId} from "@gongback/univer-sheet-collab";
 import {IWorkbookDelegate} from "./model/workbook-delegate/IWorkbookDelegate";
 
-export type WorkbookDelegateFactory = (docId: DocId) => IWorkbookDelegate;
+export type WorkbookDelegateFactory = (docId: DocId, collabId: CollabId) => IWorkbookDelegate;
 export interface Publisher {
     on (event: string, callback: (...args: any[]) => void): void;
     connect(): Promise<any>;

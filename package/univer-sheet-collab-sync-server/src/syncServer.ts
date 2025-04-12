@@ -111,7 +111,7 @@ export class SyncServer implements ISheetSyncer {
                     docId,
                     requestOperation
                 );
-                const workbookDelegate = this.workbookDelegateFactory(docId)
+                const workbookDelegate = this.workbookDelegateFactory(docId, collabId)
                 await workbookDelegate.onOperationExecuted(async (operation, options) => {
                     console.log(`[LeaderServer] onOperationExecuted`, operation, options);
                     if (options?.fromCollab || options?.onlyLocal) {

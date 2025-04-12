@@ -6,7 +6,7 @@ import '@univerjs/sheets-numfmt/facade';
 import '@univerjs/sheets-filter/facade';
 import '@univerjs/sheets-sort/facade';
 
-import {DocId, IOperation, uuidv4} from "@gongback/univer-sheet-collab";
+import {CollabId, DocId, IOperation, uuidv4} from "@gongback/univer-sheet-collab";
 import { FUniver } from '@univerjs/core/facade';
 import {IWorkbookDelegate, OnOperationExecutedCallback} from "./IWorkbookDelegate";
 import {RichTextEditingMutation} from "@univerjs/docs";
@@ -14,13 +14,15 @@ import {RichTextEditingMutation} from "@univerjs/docs";
 
 export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     readonly docId: DocId;
+    readonly collabId: CollabId;
     private univer?: Univer;
     private univerAPI?: FUniver;
     private workbook?: Workbook;
     private onOperationExecutedCallback: OnOperationExecutedCallback | null = null;
 
-    constructor(docId: string) {
+    constructor(docId: string, collabId: CollabId) {
         this.docId = docId;
+        this.collabId = collabId;
 
         this.getSnapshot = this.getSnapshot.bind(this);
         this.dispose = this.dispose.bind(this);
@@ -58,8 +60,8 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
                 return;
             }
             if (command.type === 2 && command.id !== RichTextEditingMutation.id) {
-                const operation:IOperation = {
-                    collabId: "WORKBOOK_DELEGATOR",
+                const operation: IOperation = {
+                    collabId: this.collabId,
                     operationId: uuidv4(),
                     revision: this.workbook!.getRev(),
                     command: JSON.parse(JSON.stringify(command)),
