@@ -68,7 +68,7 @@ export class SyncServer implements ISheetSyncer {
                 rev: 1,
             } as IWorkbookData;
 
-            const workbookDelegate = this.workbookDelegateFactory(docId)
+            const workbookDelegate = this.workbookDelegateFactory(docId, "SYSTEM");
             await workbookDelegate.createSheet(createWorkbookData)
             const workbookData = await workbookDelegate.getSnapshot();
             await workbookDelegate.dispose();
@@ -153,7 +153,7 @@ export class SyncServer implements ISheetSyncer {
         const operations = await this.operationStorage.selectAfter(docId, workbook.rev)
         if (operations.length > 0) {
             console.log('[LeaderServer] onFreeCache.saveSheet ', operations);
-            const workbookDelegate = this.workbookDelegateFactory(docId)
+            const workbookDelegate = this.workbookDelegateFactory(docId, "SYSTEM")
             await workbookDelegate.createSheet(workbook)
             const {workbookData} = await workbookDelegate.executeOperations(operations, {onlyLocal: true, fromCollab: true})
             await workbookDelegate.dispose();
