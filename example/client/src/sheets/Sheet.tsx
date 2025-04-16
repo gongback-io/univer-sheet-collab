@@ -20,6 +20,8 @@ import { UniverSheetsNumfmtPlugin } from "@univerjs/sheets-numfmt";
 import { UniverSheetsNumfmtUIPlugin } from "@univerjs/sheets-numfmt-ui";
 import { UniverFindReplacePlugin } from '@univerjs/find-replace';
 import { UniverSheetsFindReplacePlugin } from '@univerjs/sheets-find-replace';
+import { UniverSheetsSortPlugin } from "@univerjs/sheets-sort";
+import { UniverSheetsSortUIPlugin } from "@univerjs/sheets-sort-ui";
 import { UniverSheetCollabPlugin } from "@gongback/univer-sheet-collab";
 import { UniverSheetCollabClientPlugin, CollabSocket } from "@gongback/univer-sheet-collab-client";
 
@@ -32,6 +34,7 @@ import SheetsFormulaUIEnUS from '@univerjs/sheets-formula-ui/locale/en-US';
 import SheetsNumfmtUIEnUS from '@univerjs/sheets-numfmt-ui/locale/en-US';
 import FindReplaceEnUS from '@univerjs/find-replace/locale/en-US';
 import SheetsFindReplaceEnUS from '@univerjs/sheets-find-replace/locale/en-US';
+import SortUIEnUS from '@univerjs/sheets-sort-ui/locale/en-US';
 import SheetCollabEnUS from '@gongback/univer-sheet-collab-client/locale/en-US';
 
 import '@univerjs/engine-formula/facade';
@@ -81,6 +84,7 @@ export default function Sheet({docId}: {docId?: string}) {
                     SheetsNumfmtUIEnUS,
                     FindReplaceEnUS,
                     SheetsFindReplaceEnUS,
+                    SortUIEnUS,
                     SheetCollabEnUS
                 ),
             }
@@ -105,6 +109,8 @@ export default function Sheet({docId}: {docId?: string}) {
         univer.registerPlugin(UniverSheetsNumfmtUIPlugin);
         univer.registerPlugin(UniverFindReplacePlugin);
         univer.registerPlugin(UniverSheetsFindReplacePlugin);
+        univer.registerPlugin(UniverSheetsSortPlugin);
+        univer.registerPlugin(UniverSheetsSortUIPlugin);
 
         univer.registerPlugin(UniverSheetCollabPlugin);
         univer.registerPlugin(UniverSheetCollabClientPlugin, {

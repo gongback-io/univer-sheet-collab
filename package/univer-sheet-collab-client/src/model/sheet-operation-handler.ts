@@ -83,6 +83,7 @@ export class SheetOperationHandler extends Disposable {
                     if (options?.fromCollab || options?.onlyLocal) {
                         return;
                     }
+                    console.log('[SheetOperationHandler] onOperationExecuted', operation.command.id);
 
                     if (this.status !== "SYNCED" && this.status !== "PENDING") {
                         console.log('push waitingRequests', operation);

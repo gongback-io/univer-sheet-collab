@@ -13,7 +13,8 @@ import {
     deepReplaceUndefined,
     deepRestoreUndefined,
     compressDuplicates,
-    IOperation
+    IOperation,
+    CollabId
 } from '@gongback/univer-sheet-collab';
 import {
     CollabSocketOptions,
@@ -34,7 +35,7 @@ import {
 export type OperationBroadCastListener = (response: OpBroadcastResponse) => void;
 
 export class CollabSocket extends Disposable {
-    readonly collabId: string = uuid8();
+    private collabId: CollabId;
 
     private socket?: Socket;
     private readonly serverUrl: string;
@@ -108,10 +109,11 @@ export class CollabSocket extends Disposable {
     }
 
     public async joinSheet(docId: string): Promise<JoinResponseData> {
-        const request: JoinRequest = { docId, collabId: this.collabId };
+        const request: JoinRequest = { docId };
         if (!this.socket) {
             await this.connectSocket();
         }
+        console.log('joinSheet docId:', docId, this.collabId);
 
         if (!this.onOperationBroadcastListeners[docId]) {
             this.pendingOperation[docId] = new SortingOperationQueue();
@@ -191,6 +193,7 @@ export class CollabSocket extends Disposable {
         if (!this.socket) {
             throw new Error('Socket not connected');
         }
+        console.log('[CollabSocket] Sending operation:', request.operation.command.id, request.operation.operationId, request.operation.collabId);
         request.operation.command.params = deepReplaceUndefined(
             request.operation.command.params,
             '$UNDEFINED$'
@@ -206,6 +209,7 @@ export class CollabSocket extends Disposable {
                     '$UNDEFINED$'
                 );
             }
+            console.log('[CollabSocket] Operation response:', response.operationId);
             callback(response);
         });
     }
@@ -216,6 +220,10 @@ export class CollabSocket extends Disposable {
             '$UNDEFINED$'
         );
 
+        if (data.operation.collabId === this.collabId) {
+            return;
+        }
+        console.log('[CollabSocket] Broadcasted operation:', data.operation.operationId, data.operation.collabId);
         const docId = data.docId;
         if (this.onOperationBroadcastListeners[docId]) {
             this.onOperationBroadcastListeners[docId](data);
@@ -242,7 +250,8 @@ export class CollabSocket extends Disposable {
                 reject(err);
             };
             const onConnect = () => {
-                console.log('Socket connected');
+                console.log('Socket connected', this.socket?.id!);
+                this.collabId = this.socket?.id!;
                 this.socket?.off('connect_error', onConnectError);
                 this.socket?.off('connect', onConnect);
                 resolve();

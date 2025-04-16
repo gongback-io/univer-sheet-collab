@@ -37,9 +37,9 @@ class SheetSyncer implements ISheetSyncer {
                 revision,
                 commandJson : JSON.stringify(command)
             }
-            console.log('[grpcClient] sync', grpcRequest);
+            console.log('[grpcClient] execOperation request', grpcRequest);
             grpcClient.SendOperation(grpcRequest, (err: any, response: SendOperationGrpcResult) => {
-                console.log('[grpcClient] sync', response);
+                console.log('[grpcClient] execOperation response', response);
                 if (err) {
                     reject(err);
                 } else {

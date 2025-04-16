@@ -38,7 +38,6 @@ export type OpBroadcastResponse = {
 }
 export type JoinRequest = {
     docId: DocId;
-    collabId: string;
 }
 export type JoinResponseData = {
     docId: DocId;
