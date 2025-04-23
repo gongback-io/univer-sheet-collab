@@ -35,7 +35,7 @@ import {
 export type OperationBroadCastListener = (response: OpBroadcastResponse) => void;
 
 export class CollabSocket extends Disposable {
-    private collabId: CollabId;
+    collabId: CollabId;
 
     private socket?: Socket;
     private readonly serverUrl: string;
@@ -271,7 +271,7 @@ export class CollabSocket extends Disposable {
     }
 
     private onDisconnect(reason: string) {
-        this.socket?.off(this.opEventName, this.onBroadcast);
+        // this.socket?.off(this.opEventName, this.onBroadcast);
 
         console.log('Socket disconnected:', reason);
         Object.keys(this.offlineListeners).forEach(docId => {
