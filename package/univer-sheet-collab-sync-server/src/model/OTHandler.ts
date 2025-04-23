@@ -18,20 +18,21 @@ export class OTHandler {
         this.operationQueue = options.operationQueue;
     }
 
-    async handleTransform(collabId: string, docId: DocId, operation:IOperation): Promise<{operation: IOperation, isTransformed: boolean, isSheetChangeOp: boolean}> {
+    async handleTransform(collabId: string, docId: DocId, operation:IOperation): Promise<{operationModel: IOperationModel, operation: IOperation, isTransformed: boolean, isSheetChangeOp: boolean}> {
         try {
+            const operationModel = transformModelFactory.createOperationModel(operation);
             if (operation.command.type !== 2) {
                 return {
+                    operationModel,
                     operation: operation,
                     isTransformed: false,
                     isSheetChangeOp: false,
                 };
             }
-            const operationModel = transformModelFactory.createOperationModel(operation);
             const {operationModel: transformedModel} = await this._handleOperationModel(docId, operationModel);
             transformedModel.revision += 1
-            await this.addQueue(docId, transformedModel);
             return {
+                operationModel: transformedModel,
                 operation: {
                     collabId: transformedModel.collabId,
                     operationId: transformedModel.operationId,
@@ -89,10 +90,6 @@ export class OTHandler {
             transformed.revision = transformer.revision
         }
         return transformed
-    }
-
-    async addQueue(docId: DocId, operation: IOperationModel) {
-        return this.operationQueue.add(docId, operation)
     }
 }
 
