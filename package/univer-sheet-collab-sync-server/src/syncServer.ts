@@ -123,7 +123,7 @@ export class SyncServer implements ISheetSyncer {
             requestOperation
         );
         const workbookDelegate = this.workbookDelegateFactory(docId, collabId)
-        await workbookDelegate.onOperationExecuted(async (operation, options) => {
+        await workbookDelegate.setOnOperationExecuted(async (operation, options) => {
             console.log(`[LeaderServer] onOperationExecuted`, operation, options);
             if (options?.fromCollab || options?.onlyLocal) {
                 return;

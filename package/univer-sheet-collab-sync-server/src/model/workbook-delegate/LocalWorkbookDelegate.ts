@@ -32,6 +32,8 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
 
     protected abstract makeUniver(): Univer;
 
+    abstract onOperationExecuted(operation: IOperation, options?: IExecutionOptions): Promise<void>;
+
     public async createSheet(workbookData: Partial<IWorkbookData>): Promise<void> {
         console.log('[LocalWorkbookDelegate] createSheet', workbookData);
         const univer = this.makeUniver();
@@ -66,6 +68,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
                     revision: this.workbook!.getRev(),
                     command: JSON.parse(JSON.stringify(command)),
                 }
+                this.onOperationExecuted(operation, options);
                 this.onOperationExecutedCallback!(operation, options);
             }
         });
@@ -83,7 +86,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
         this.univer?.dispose();
     }
 
-    async onOperationExecuted(listener:OnOperationExecutedCallback): Promise<void>{
+    async setOnOperationExecuted(listener:OnOperationExecutedCallback): Promise<void>{
         if (this.univerAPI) {
             this.registOnOperationExecuted();
         } else {
