@@ -1,4 +1,4 @@
-import {LocaleType, Univer, merge} from "@univerjs/core";
+import {IExecutionOptions, LocaleType, Univer, merge} from "@univerjs/core";
 import {UniverFormulaEnginePlugin} from "@univerjs/engine-formula";
 import {UniverDocsPlugin} from "@univerjs/docs";
 import {UniverSheetsPlugin} from "@univerjs/sheets";
@@ -13,6 +13,7 @@ import FindReplaceEnUS from '@univerjs/find-replace/locale/en-US';
 import SheetsFindReplaceEnUS from '@univerjs/sheets-find-replace/locale/en-US';
 import {LocalWorkbookDelegate} from "@gongback/univer-sheet-collab-sync-server";
 import {DataPlugin} from "./sheet/data-plugin/plugin";
+import {IOperation} from "@gongback/univer-sheet-collab";
 
 
 export class WorkbookModel extends LocalWorkbookDelegate {
@@ -51,5 +52,10 @@ export class WorkbookModel extends LocalWorkbookDelegate {
         univer.registerPlugin(DataPlugin);
         // univer.registerPlugin(UniverSheetCollabPlugin);
         // univer.registerPlugin(UniverSheetCollabServerPlugin);
+    }
+
+    override async onOperationExecuted(operation: IOperation, options?: IExecutionOptions): Promise<void> {
+        //TODO
+        // write code if you want to handle operation executed event
     }
 }

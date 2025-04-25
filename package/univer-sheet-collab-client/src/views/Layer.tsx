@@ -92,7 +92,7 @@ export default function Layer() {
             right: 0,
             bottom: 0,
             display: hidden ? 'none' : 'flex',
-            zIndex: 10,
+            zIndex: 9999,
         }}>
             <Content
                 revision={revision?.revision}

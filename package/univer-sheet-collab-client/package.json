@@ -37,7 +37,8 @@
                 "import": "./dist/facade/index.mjs",
                 "require": "./dist/facade/index.js",
                 "types": "./dist/facade/index.d.ts"
-            }
+            },
+            "./lib/*": "./dist/*"
         }
     },
     "files": [
