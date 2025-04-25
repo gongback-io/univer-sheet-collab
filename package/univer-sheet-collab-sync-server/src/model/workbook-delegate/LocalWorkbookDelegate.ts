@@ -32,7 +32,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
 
     protected abstract makeUniver(): Univer;
 
-    abstract onOperationExecuted(operation: IOperation, options?: IExecutionOptions): Promise<void>;
+    abstract onOperationExecuted(operation: IOperation, options?: IExecutionOptions): void;
 
     public async createSheet(workbookData: Partial<IWorkbookData>): Promise<void> {
         console.log('[LocalWorkbookDelegate] createSheet', workbookData);
@@ -58,19 +58,14 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     private registOnOperationExecuted() {
         this.univerAPI?.onCommandExecuted((command, options) => {
             console.log('[LocalWorkbookDelegate] onCommandExecuted', command, options);
-            if (options?.fromCollab || options?.onlyLocal) {
-                return;
+            const operation: IOperation = {
+                collabId: this.collabId,
+                operationId: uuidv4(),
+                revision: this.workbook!.getRev(),
+                command: JSON.parse(JSON.stringify(command)),
             }
-            if (command.type === 2 && command.id !== RichTextEditingMutation.id) {
-                const operation: IOperation = {
-                    collabId: this.collabId,
-                    operationId: uuidv4(),
-                    revision: this.workbook!.getRev(),
-                    command: JSON.parse(JSON.stringify(command)),
-                }
-                this.onOperationExecuted(operation, options);
-                this.onOperationExecutedCallback!(operation, options);
-            }
+            this.onOperationExecuted(operation, options);
+            this.onOperationExecutedCallback!(operation, options);
         });
     }
 

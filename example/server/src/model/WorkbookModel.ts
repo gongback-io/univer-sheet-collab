@@ -54,7 +54,7 @@ export class WorkbookModel extends LocalWorkbookDelegate {
         // univer.registerPlugin(UniverSheetCollabServerPlugin);
     }
 
-    override async onOperationExecuted(operation: IOperation, options?: IExecutionOptions): Promise<void> {
+    override onOperationExecuted(operation: IOperation, options?: IExecutionOptions): void {
         //TODO
         // write code if you want to handle operation executed event
     }

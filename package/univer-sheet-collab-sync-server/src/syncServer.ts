@@ -14,6 +14,7 @@ import {Publisher, WorkbookDelegateFactory} from './types';
 import {PostProcessor} from "./model/PostProcessor";
 import {InMemoryOperationQueue} from "./model/operation-queue/InMemoryOperationQueue";
 import {IWorkbookData} from '@univerjs/core';
+import { RichTextEditingMutation } from '@univerjs/docs';
 
 export class SyncServer implements ISheetSyncer {
     private operationStorage: IOperationStorage
@@ -128,13 +129,17 @@ export class SyncServer implements ISheetSyncer {
             if (options?.fromCollab || options?.onlyLocal) {
                 return;
             }
-            this.execOperationInner({
-                docId,
-                collabId: operation.collabId,
-                operationId: operation.operationId,
-                revision: operation.revision,
-                command: operation.command
-            });
+            if (command.type === 2 && command.id !== RichTextEditingMutation.id) {
+                this.execOperationInner({
+                    docId,
+                    collabId: operation.collabId,
+                    operationId: operation.operationId,
+                    revision: operation.revision,
+                    command: operation.command
+                }).catch(e => {
+                    console.error('[LeaderServer] onOperationExecuted Error:', e);
+                })
+            }
         })
         const {
             needPublish,
