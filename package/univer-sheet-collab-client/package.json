@@ -16,7 +16,8 @@
     "exports": {
         ".": "./src/index.ts",
         "./locale/*": "./src/locale/*.ts",
-        "./facade": "./src/facade/index.ts"
+        "./facade": "./src/facade/index.ts",
+        "./lib/*": "./src/*"
     },
     "publishConfig": {
         "access": "public",
@@ -59,8 +60,8 @@
         "@univerjs/sheets": "^0.6.0",
         "@univerjs/sheets-ui": "^0.6.0",
         "@univerjs/ui": "^0.6.0",
-        "react": "^16.9.0 || ^17.0.0 || ^18.0.0",
-        "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0",
+        "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+        "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
         "rxjs": ">=7.0.0"
     },
     "dependencies": {

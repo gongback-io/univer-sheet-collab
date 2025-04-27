@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
-import { IRevisionWorkbook } from '@gongback/univer-sheet-collab';
-import "../global.css";
+import {IRevisionWorkbook} from '@gongback/univer-sheet-collab';
+import "../index.css";
 import {useDependency} from "@univerjs/ui";
 import {LocaleService} from "@univerjs/core";
 
