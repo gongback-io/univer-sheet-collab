@@ -57,6 +57,12 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
 
     private registOnOperationExecuted() {
         this.univerAPI?.onCommandExecuted((command, options) => {
+            if (command.type !== 2 || command.id === RichTextEditingMutation.id) {
+                return;
+            }
+            if (options?.fromCollab || options?.onlyLocal) {
+                return;
+            }
             console.log('[LocalWorkbookDelegate] onCommandExecuted', command, options);
             const operation: IOperation = {
                 collabId: this.collabId,
@@ -90,7 +96,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
     }
 
     async executeOperations(operations: IOperation[], options?:IExecutionOptions): Promise<{ workbookData: IWorkbookData, results: any[] }> {
-        console.log('[LocalWorkbookDelegate] executeOperations', operations);
+        console.log('[LocalWorkbookDelegate] executeOperations', operations, options);
         if (!this.workbook) {
             throw new Error('Workbook is not initialized');
         }

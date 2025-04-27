@@ -59,7 +59,7 @@ export function startGrpcServer(syncServer: SyncServer) {
                 console.log('[grpcServer] grpcResponse', grpcResult);
                 callback(null, grpcResult);
             }).catch((error) => {
-                console.error('[LeaderServer] sendOperation Error:', error);
+                console.error('[grpcServer] sendOperation Error:', error);
                 callback({
                     code: grpc.status.UNKNOWN,
                     message: 'Internal Server Error',

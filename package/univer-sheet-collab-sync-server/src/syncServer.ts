@@ -84,7 +84,7 @@ export class SyncServer implements ISheetSyncer {
 
     async execOperation(options: ExecRequest): Promise<ExecResult> {
         try {
-
+            console.log(`[LeaderServer] enqueue`, options.command, options.operationId, options);
             return await this.docQueueManager.enqueue(options.docId, async () => {
                 return await this.execOperationInner(options);
             });
@@ -106,6 +106,7 @@ export class SyncServer implements ISheetSyncer {
         if (!workbook) {
             workbook = await this.createDoc(docId)
         }
+        console.log(`[LeaderServer] execOperation`, options.command, options.operationId, options);
 
         const requestOperation: IOperation = {
             collabId,
@@ -114,7 +115,7 @@ export class SyncServer implements ISheetSyncer {
             command
         }
         const {
-            operationModel: TransformedOperationModel,
+            operationModel: transformedOperationModel,
             operation: transformedOperation,
             isSheetChangeOp,
             isTransformed
@@ -125,12 +126,13 @@ export class SyncServer implements ISheetSyncer {
         );
         const workbookDelegate = this.workbookDelegateFactory(docId, collabId)
         await workbookDelegate.setOnOperationExecuted(async (operation, options) => {
-            console.log(`[LeaderServer] onOperationExecuted`, operation, options);
+            const command = operation.command;
             if (options?.fromCollab || options?.onlyLocal) {
                 return;
             }
             if (command.type === 2 && command.id !== RichTextEditingMutation.id) {
-                this.execOperationInner({
+                console.log(`[LeaderServer] onOperationExecuted`, operation, options);
+                this.execOperation({
                     docId,
                     collabId: operation.collabId,
                     operationId: operation.operationId,
@@ -145,7 +147,12 @@ export class SyncServer implements ISheetSyncer {
             needPublish,
             execResult
         } = await this.postProcessor.postProcess(docId, workbookDelegate, transformedOperation, isSheetChangeOp);
-        await this.operationQueue.add(docId, TransformedOperationModel);
+
+        console.log(`[LeaderServer] post execOperation`, options.command, options.operationId, options);
+
+        if (transformedOperation.command.type === 2 && command.id !== RichTextEditingMutation.id) {
+            await this.operationQueue.add(docId, transformedOperationModel);
+        }
         await workbookDelegate.dispose();
         const result: ExecResult = {
             docId,
