@@ -1,4 +1,12 @@
-import {IExecutionOptions, IResourceLoaderService, IWorkbookData, LifecycleStages, Univer, UniverInstanceType, Workbook} from '@univerjs/core';
+import {
+    IExecutionOptions,
+    IResourceLoaderService,
+    IWorkbookData,
+    LifecycleStages,
+    Univer,
+    UniverInstanceType,
+    Workbook
+} from '@univerjs/core';
 
 import '@univerjs/engine-formula/facade';
 import '@univerjs/sheets/facade';
@@ -7,7 +15,7 @@ import '@univerjs/sheets-filter/facade';
 import '@univerjs/sheets-sort/facade';
 
 import {CollabId, DocId, IOperation, uuidv4} from "@gongback/univer-sheet-collab";
-import { FUniver } from '@univerjs/core/facade';
+import {FUniver} from '@univerjs/core/facade';
 import {IWorkbookDelegate, OnOperationExecutedCallback} from "./IWorkbookDelegate";
 import {RichTextEditingMutation} from "@univerjs/docs";
 
@@ -40,9 +48,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
 
         this.univer = univer;
         this.univerAPI = FUniver.newAPI(univer);
-        if (this.onOperationExecutedCallback) {
-            this.registOnOperationExecuted();
-        }
+        this.registOnOperationExecuted();
 
         return new Promise(async (resolve) => {
             this.univerAPI!.addEvent('LifeCycleChanged', async (e) => {
@@ -65,13 +71,13 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
             }
             console.log('[LocalWorkbookDelegate] onCommandExecuted', command, options);
             const operation: IOperation = {
-                collabId: this.collabId,
+                collabId: "SYSTEM",
                 operationId: uuidv4(),
                 revision: this.workbook!.getRev(),
                 command: JSON.parse(JSON.stringify(command)),
             }
             this.onOperationExecuted(operation, options);
-            this.onOperationExecutedCallback!(operation, options);
+            this.onOperationExecutedCallback?.(operation, options);
         });
     }
 
@@ -87,12 +93,8 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
         this.univer?.dispose();
     }
 
-    async setOnOperationExecuted(listener:OnOperationExecutedCallback): Promise<void>{
-        if (this.univerAPI) {
-            this.registOnOperationExecuted();
-        } else {
-            this.onOperationExecutedCallback = listener;
-        }
+    setOnOperationExecuted(listener:OnOperationExecutedCallback): void {
+        this.onOperationExecutedCallback = listener;
     }
 
     async executeOperations(operations: IOperation[], options?:IExecutionOptions): Promise<{ workbookData: IWorkbookData, results: any[] }> {

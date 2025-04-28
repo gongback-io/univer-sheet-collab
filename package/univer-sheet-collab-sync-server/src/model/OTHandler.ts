@@ -1,11 +1,5 @@
-import {
-    DocId,
-    IOperation,
-    transformModelFactory,
-    IOperationModel,
-} from "@gongback/univer-sheet-collab";
+import {DocId, IOperation, IOperationModel, transformModelFactory,} from "@gongback/univer-sheet-collab";
 import {IOperationQueue} from "./operation-queue/IOperationQueue";
-import {isSheetChangeOp} from "../util/OperationModelUtil";
 
 type HandleResult = {
     operationModel: IOperationModel,
@@ -18,7 +12,7 @@ export class OTHandler {
         this.operationQueue = options.operationQueue;
     }
 
-    async handleTransform(collabId: string, docId: DocId, operation:IOperation): Promise<{operationModel: IOperationModel, operation: IOperation, isTransformed: boolean, isSheetChangeOp: boolean}> {
+    async handleTransform(collabId: string, docId: DocId, operation:IOperation): Promise<{operationModel: IOperationModel, operation: IOperation, isTransformed: boolean}> {
         try {
             const operationModel = transformModelFactory.createOperationModel(operation);
             if (operation.command.type !== 2) {
@@ -26,7 +20,6 @@ export class OTHandler {
                     operationModel,
                     operation: operation,
                     isTransformed: false,
-                    isSheetChangeOp: false,
                 };
             }
             const {operationModel: transformedModel} = await this._handleOperationModel(docId, operationModel);
@@ -40,7 +33,6 @@ export class OTHandler {
                     command: transformedModel.command,
                 },
                 isTransformed: transformedModel.isTransformed,
-                isSheetChangeOp: isSheetChangeOp(transformedModel),
             };
         } catch (e: any) {
             console.error(e);

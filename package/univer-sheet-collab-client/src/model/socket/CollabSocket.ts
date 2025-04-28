@@ -1,35 +1,32 @@
-import type { Socket } from 'socket.io-client';
-import { io } from 'socket.io-client';
+import type {Socket} from 'socket.io-client';
+import {io} from 'socket.io-client';
 import {
+    CollabId,
+    compressDuplicates,
+    deepReplaceUndefined,
+    deepRestoreUndefined,
     DocId,
+    FetchRequest,
+    FetchResponse,
+    IOperation,
     JoinRequest,
     JoinResponse,
     JoinResponseData,
-    FetchRequest,
-    FetchResponse,
-    OpRequest,
-    OpResponse,
     OpBroadcastResponse,
-    deepReplaceUndefined,
-    deepRestoreUndefined,
-    compressDuplicates,
-    IOperation,
-    CollabId
+    OpRequest,
+    OpResponse
 } from '@gongback/univer-sheet-collab';
 import {
     CollabSocketOptions,
-    defaultOpEmitName,
-    defaultOpEventName,
+    defaultFetchEventName,
     defaultJoinEventName,
     defaultLeaveEventName,
-    defaultFetchEventName,
+    defaultOpEmitName,
+    defaultOpEventName,
 } from '../../types';
 import SortingOperationQueue from '../queue/SortingOperationQueue';
-import { Disposable, IConfigService } from '@univerjs/core';
-import {
-    ISocketConfig,
-    SOCKET_CONFIG_KEY
-} from '../../controller/config.schema';
+import {Disposable, IConfigService} from '@univerjs/core';
+import {ISocketConfig, SOCKET_CONFIG_KEY} from '../../controller/config.schema';
 
 
 export type OperationBroadCastListener = (response: OpBroadcastResponse) => void;
@@ -209,7 +206,7 @@ export class CollabSocket extends Disposable {
                     '$UNDEFINED$'
                 );
             }
-            console.log('[CollabSocket] Operation response:', response.operationId);
+            console.log('[CollabSocket] Operation response:', response.data?.operation.command.id, response.operationId);
             callback(response);
         });
     }
@@ -223,7 +220,7 @@ export class CollabSocket extends Disposable {
         if (data.operation.collabId === this.collabId) {
             return;
         }
-        console.log('[CollabSocket] Broadcasted operation:', data.operation.operationId, data.operation.collabId);
+        console.log('[CollabSocket] Broadcasted operation:', data.operation.command.id, data.operation.operationId, data.operation.collabId);
         const docId = data.docId;
         if (this.onOperationBroadcastListeners[docId]) {
             this.onOperationBroadcastListeners[docId](data);

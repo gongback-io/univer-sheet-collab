@@ -1,13 +1,17 @@
-import {IOperationModel} from "@gongback/univer-sheet-collab";
-import { COMMAND_LISTENER_VALUE_CHANGE } from "@univerjs/sheets";
+import {IOperation, IOperationModel} from "@gongback/univer-sheet-collab";
+import {COMMAND_LISTENER_SKELETON_CHANGE, COMMAND_LISTENER_VALUE_CHANGE} from "@univerjs/sheets";
 
-export function isSheetChangeOp(operationModel: IOperationModel): boolean {
-    if (operationModel.id.includes("protection")) {
+export function isSheetChangeOp(operation: IOperation): boolean {
+    if (operation.command.id.includes("protection")) {
         return true;
     }
-    return COMMAND_LISTENER_VALUE_CHANGE.indexOf(operationModel.id) > -1
-    // return !!(
-    //     operationModel.cellPayload?.find(a => a.cells.getSizeOf() > 0) ||
-    //     operationModel.rangePayload
-    // );
+    if (operation.command.type !== 2) {
+        return false;
+    }
+    return COMMAND_LISTENER_VALUE_CHANGE.indexOf(operation.command.id) > -1 ||
+        COMMAND_LISTENER_SKELETON_CHANGE.indexOf(operation.command.id) > -1
+}
+
+export function isPublishableOp(operation: IOperation): boolean {
+    return operation.command.id !== 'collab.mutation.apply-revision'
 }

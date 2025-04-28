@@ -1,5 +1,5 @@
 import {CollabId, DocId, IOperation} from "@gongback/univer-sheet-collab";
-import {IExecutionOptions, IWorkbookData } from "@univerjs/core";
+import {IExecutionOptions, IWorkbookData} from "@univerjs/core";
 
 export type OnOperationExecutedCallback = (command: IOperation, options?: IExecutionOptions) => void;
 export interface IWorkbookDelegate {
@@ -7,7 +7,7 @@ export interface IWorkbookDelegate {
     readonly collabId: CollabId;
     createSheet(workbookData: Partial<IWorkbookData>): Promise<void>;
     onOperationExecuted(operation: IOperation, options?: IExecutionOptions): void;
-    setOnOperationExecuted(listener:OnOperationExecutedCallback): Promise<void>
+    setOnOperationExecuted(listener:OnOperationExecutedCallback): void
     executeOperations(operation: IOperation[], options?:IExecutionOptions): Promise<{ workbookData: IWorkbookData, results: any[] }>
     getSnapshot(): Promise<IWorkbookData>
     dispose(): Promise<void>;

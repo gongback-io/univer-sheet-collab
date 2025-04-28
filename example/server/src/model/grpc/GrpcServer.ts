@@ -24,7 +24,7 @@ export function startGrpcServer(syncServer: SyncServer) {
                 console.log('[grpcServer] createDoc result', result);
                 callback(null, result)
             }).catch(e => {
-                console.error('[LeaderServer] createDoc Error:', e);
+                console.error('[grpcServer] createDoc Error:', e);
                 callback({
                     code: grpc.status.UNKNOWN,
                     message: 'Internal Server Error',
@@ -72,7 +72,7 @@ export function startGrpcServer(syncServer: SyncServer) {
     const bindAddress = '0.0.0.0:50051';
     server.bindAsync(bindAddress, grpc.ServerCredentials.createInsecure(), (err, port) => {
         if (err) throw err;
-        console.log(`[LeaderServer] gRPC server listening on ${bindAddress}`);
+        console.log(`[grpcServer] gRPC server listening on ${bindAddress}`);
         server.start();
     });
 }
