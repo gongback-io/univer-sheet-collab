@@ -14,10 +14,26 @@
     },
     "main": "src/index.ts",
     "exports": {
-        ".": "./src/index.ts",
-        "./locale/*": "./src/locale/*.ts",
-        "./facade": "./src/facade/index.ts",
-        "./lib/*": "./src/*"
+        ".": {
+            "production": "./dist/index.js",
+            "development": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./locale/*": {
+            "production": "./dist/locale/*.js",
+            "development": "./src/locale/*.ts",
+            "default": "./src/locale/*.ts"
+        },
+        "./facade": {
+            "production": "./dist/facade/index.js",
+            "development": "./src/facade/index.ts",
+            "default": "./src/facade/index.ts"
+        },
+        "./lib/*": {
+            "production": "./dist/*",
+            "development": "./src/*",
+            "default": "./src/*"
+        }
     },
     "publishConfig": {
         "access": "public",

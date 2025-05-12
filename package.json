@@ -1,7 +1,7 @@
 {
   "name": "gongback",
   "type": "module",
-  "version": "0.6.25",
+  "version": "0.6.26",
   "description": "Collaborative spreadsheet plugin for Univer Spreadsheet",
   "keywords": [
     "gongback",

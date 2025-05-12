@@ -3,7 +3,6 @@
 import {IOperationQueue} from './IOperationQueue';
 import {
     DocId,
-    IOperation,
     IOperationModel,
     IOperationStorage,
     RevisionId,
@@ -60,9 +59,7 @@ export class InMemoryOperationQueue implements IOperationQueue {
 
         docOps.ops.push(operation);
 
-        this.opStorage.insert(docId, operation).catch(err => {
-            console.error('Failed to insert OP to storage:', err);
-        });
+        await this.opStorage.insert(docId, operation)
 
         return operation.revision;
     }

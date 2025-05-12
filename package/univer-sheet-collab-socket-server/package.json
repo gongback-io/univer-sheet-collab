@@ -14,7 +14,11 @@
   },
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "production": "./dist/index.js",
+      "development": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   },
   "publishConfig": {
     "access": "public",

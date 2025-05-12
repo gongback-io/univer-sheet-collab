@@ -18,9 +18,9 @@ import {InMemoryOperationQueue} from "./model/operation-queue/InMemoryOperationQ
 import {IWorkbookData} from '@univerjs/core';
 import {RichTextEditingMutation} from '@univerjs/docs';
 import {isSheetChangeOp} from "./util/OperationModelUtil";
-import {IOperationManager } from './model/operation-manager/IOperationManager';
+import {IOperationManager} from './model/operation-manager/IOperationManager';
 import {IWorkbookManager} from "./model/workbook-manager/IWorkbookManager";
-import { OperationManager } from './model/operation-manager/Operationmanager';
+import {OperationManager} from './model/operation-manager/Operationmanager';
 import {WorkbookManager} from "./model/workbook-manager/WorkbookManager";
 import {IOperationPublisher} from "./model/operation-publisher/IOperationPublisher";
 import {OperationPublisher} from "./model/operation-publisher/OperationPublisher";
@@ -101,7 +101,7 @@ export class SyncServer implements ISheetSyncer {
             revision,
             command
         } = options;
-        console.log(`[SyncServer] execOperation`, options.command, options.operationId, options);
+        console.log(`[SyncServer] execOperation`, operationId, command, revision);
 
         // 워크북 데이터 가져오기
         let workbook = await this.workbookManager.getWorkbook(docId);
@@ -146,7 +146,7 @@ export class SyncServer implements ISheetSyncer {
                 docId,
                 subOperation
             );
-            if (transformedOperation.command.type === 2 && command.id !== RichTextEditingMutation.id) {
+            if (operation.command.type === 2 && operation.command.id !== RichTextEditingMutation.id) {
                 newRevision = operation.revision
                 await this.operationManager.addOperation(docId, operationModel);
                 await this.operationPublisher.publishOperation(docId, operation);

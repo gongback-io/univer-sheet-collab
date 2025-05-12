@@ -32,7 +32,7 @@ import {ISocketConfig, SOCKET_CONFIG_KEY} from '../../controller/config.schema';
 export type OperationBroadCastListener = (response: OpBroadcastResponse) => void;
 
 export class CollabSocket extends Disposable {
-    collabId: CollabId;
+    collabId?: CollabId;
 
     private socket?: Socket;
     private readonly serverUrl: string;

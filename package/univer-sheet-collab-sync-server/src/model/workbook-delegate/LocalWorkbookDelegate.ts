@@ -69,7 +69,7 @@ export abstract class LocalWorkbookDelegate implements IWorkbookDelegate {
             if (options?.fromCollab || options?.onlyLocal) {
                 return;
             }
-            console.log('[LocalWorkbookDelegate] onCommandExecuted', command, options);
+            // console.log('[LocalWorkbookDelegate] onCommandExecuted', command, options);
             const operation: IOperation = {
                 collabId: "SYSTEM",
                 operationId: uuidv4(),

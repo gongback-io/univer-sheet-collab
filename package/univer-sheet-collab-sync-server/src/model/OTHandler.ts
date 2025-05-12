@@ -42,6 +42,7 @@ export class OTHandler {
 
     private async _handleOperationModel(docId: DocId, operation: IOperationModel): Promise<HandleResult> {
         const operationModels = await this.operationQueue.getAfter(docId, operation.revision );
+        console.log('operationModels', operationModels);
         const alreadyIn = operationModels.find((operationStorageItem) =>
             operationStorageItem!.operationId === operation.operationId
         )
@@ -51,12 +52,15 @@ export class OTHandler {
                 isTransformed: alreadyIn.isTransformed,
             }
         }
+        console.log('operation', operation);
         const transformed = this._handleTransform(
             operation,
             operationModels
         )
+        console.log('transformed', transformed);
 
         const currentRevision = await this.operationQueue.getCurrentRevision(docId);
+        console.log(`${operationModels[operationModels.length-1]?.revision} / ${transformed.revision} / ${currentRevision}`);
         if (transformed.revision !== currentRevision) {
             throw new Error(`Invalid revision: ${transformed.revision} / ${currentRevision}`)
         }
